@@ -1,0 +1,821 @@
+     1                                  ;task 4,Experiment 1
+     2                                  ;hustccc
+     3                                  ;2020/3/26
+     4                                  ;Archlinux
+     5                                  section	.data	
+     6 00000000 6368656368756E6368-     bname	db	"chechunchi",0	;boss name
+     6 00000009 6900               
+     7 0000000B 687573746363630000-     bpass	db	"hustccc",0,0,0	;password
+     7 00000014 00                 
+     8 00000015 00                      auth	db	0		;status
+     9                                  ;default	db	"default",0xA	;default
+    10                                  ;len_default	equ	$-default
+    11                                  N	equ	30		;total num of good
+    12 00000016 534B5400                sname	db	"SKT",0		;name of shop
+    13 0000001A 70656E                  ga1	db	"pen"		;about goods
+    14 0000001D 00<rept>                	times	7 db	0	;fix
+    15 00000024 0A                      	db	10		;count
+    16 00000025 230038004600190000-     	dw	35,56,70,25,0
+    16 0000002E 00                 
+    17 0000002F 626F6F6B                ga2	db	"book"
+    18 00000033 00<rept>                	times	6 db	0
+    19 00000039 09                      	db	9
+    20 0000003A 0C001E001900050000-     	dw	12,30,25,5,0
+    20 00000043 00                 
+    21 00000044 74656D707661756C65-     gan	times	N-2	db	"tempvaule",0,8,15,0,20,0,30,0,2,0,0,0
+    21 0000004D 00080F0014001E0002-
+    21 00000056 000000<rept>       
+    22 00000290 0000                    good	dw	0
+    23 00000292 00<rept>                opt	times	10	db	0
+    24                                  len_opt	equ	10
+    25 0000029C 00<rept>                anykey	times	10	db	0
+    26                                  len_anykey	equ	10
+    27 000002A6 00<rept>                in_name	times	20	db	0
+    28                                  len_in_name	equ	20
+    29 000002BA 00<rept>                in_pwd	times	20	db	0
+    30                                  len_in_pwd	equ	20
+    31 000002CE 00<rept>                in_good	times	20	db	0
+    32                                  len_in_good	equ	20
+    33 000002E2 0000                    temp1	dw	0
+    34 000002E4 0000                    temp2	dw	0
+    35 000002E6 00                      char	db	0
+    36                                  len_char	equ	1
+    37 000002E7 6368656368756E6368-     boss	db	"chechunchi"
+    37 000002F0 69                 
+    38                                  len_boss	equ	$-boss
+    39 000002F1 637573746F6D6572        customer	db	"customer"
+    40                                  len_customer	equ	$-customer
+    41                                  nlength	equ	20
+    42                                  plength	equ	20
+    43                                  glength	equ	10
+    44 000002F9 757365723A              notice1	db	"user:"
+    45                                  len_notice1	equ	$-notice1
+    46 000002FE 676F6F643A              notice2	db	"good:"
+    47                                  len_notice2	equ	$-notice2
+    48 00000303 504C6561736520696E-     notice3	db	"PLease input number between 1~9:"
+    48 0000030C 707574206E756D6265-
+    48 00000315 72206265747765656E-
+    48 0000031E 20317E393A         
+    49                                  len_notice3	equ	$-notice3
+    50 00000323 456E74657220616E79-     notice4	db	"Enter any key to continue...",0xA
+    50 0000032C 206B657920746F2063-
+    50 00000335 6F6E74696E75652E2E-
+    50 0000033E 2E0A               
+    51                                  len_notice4	equ	$-notice4
+    52 00000340 4C6F67696E3A            notice5	db	"Login:"
+    53                                  len_notice5	equ	$-notice5
+    54 00000346 5061737377643A          notice6	db	"Passwd:"
+    55                                  len_notice6	equ	$-notice6
+    56 0000034D 4C6F67696E20657272-     notice7	db	"Login error"
+    56 00000356 6F72               
+    57                                  len_notice7	equ	$-notice7
+    58 00000358 4C6F67696E20737563-     notice8	db	"Login success"
+    58 00000361 63657373           
+    59                                  len_notice8	equ	$-notice8
+    60 00000365 4E616D65206F662067-     notice9	db	"Name of good:"
+    60 0000036E 6F6F643A           
+    61                                  len_notice9	equ	$-notice9
+    62 00000372 466F756E640A            notice10	db	"Found",0xA
+    63                                  len_notice10	equ	$-notice10
+    64 00000378 4E6F7420466F756E64      notice11	db	"Not Found"
+    65                                  len_notice11	equ	$-notice11
+    66 00000381 446F206E6F74207365-     notice12	db	"Do not select good"
+    66 0000038A 6C65637420676F6F64 
+    67                                  len_notice12	equ	$-notice12
+    68 00000393 476F6F642069732065-     notice13	db	"Good is empty"
+    68 0000039C 6D707479           
+    69                                  len_notice13	equ	$-notice13
+    70 000003A0 436F6D70757465206F-     notice14	db	"Compute over"
+    70 000003A9 766572             
+    71                                  len_notice14	equ	$-notice14
+    72 000003AC 313D3E4C6F67696E0A      label1	db	"1=>Login",0xA
+    73                                  len_label1	equ	$-label1
+    74 000003B5 323D3E46696E640A        label2	db	"2=>Find",0xA
+    75                                  len_label2	equ	$-label2
+    76 000003BD 333D3E4275790A          label3	db	"3=>Buy",0xA
+    77                                  len_label3	equ	$-label3
+    78 000003C4 343D3E436F6D707574-     label4	db	"4=>Compute",0xA
+    78 000003CD 650A               
+    79                                  len_label4	equ	$-label4
+    80 000003CF 353D3E52616E6B0A        label5	db	"5=>Rank",0xA
+    81                                  len_label5	equ	$-label5
+    82 000003D7 363D3E4368616E6765-     label6	db	"6=>Change",0xA
+    82 000003E0 0A                 
+    83                                  len_label6	equ	$-label6
+    84 000003E1 373D3E4D6F76650A        label7	db	"7=>Move",0xA
+    85                                  len_label7	equ	$-label7
+    86 000003E9 383D3E416464726573-     label8	db	"8=>Address",0xA
+    86 000003F2 730A               
+    87                                  len_label8	equ	$-label8
+    88 000003F4 393D3E517569740A        label9	db	"9=>Quit",0xA
+    89                                  len_label9	equ	$-label9
+    90 000003FC 0A                      crlf	db	0xA
+    91                                  len_crlf	equ	$-crlf
+    92 000003FD 090A                    blank	db	"	",0xA
+    93                                  len_blank	equ	$-blank
+    94                                  ;==============================================================================
+    95                                  ;section	.stack			;stack segment
+    96                                  ;stack	times	200	db	0
+    97                                  ;==============================================================================
+    98                                  section	.text			;code segment
+    99                                  global	_start			;define start
+   100                                  _start:
+   101                                  	;org	0000h
+   102                                  	;mov	ax,	bname
+   103                                  	;mov	ds,	ax
+   104                                  	;mov	es,	ax
+   105                                  	;mov	ax,	stack
+   106                                  	;mov	ss,	ax
+   107                                  	;mov	ax,	_start
+   108                                  	;mov	cs,	ax
+   109                                  menu:
+   110                                  	;write
+   111 00000000 BA05000000              	mov	edx,	len_notice1
+   112 00000005 B9[F9020000]            	mov	ecx,	notice1
+   113 0000000A BB01000000              	mov	ebx,	1
+   114 0000000F B804000000              	mov	eax,	4
+   115 00000014 CD80                    	int	0x80	
+   116                                  	;end write
+   117                                  
+   118 00000016 803D[15000000]01        	cmp	BYTE [auth],	1
+   119 0000001D 0F8407060000            	je	printbname
+   120 00000023 0F851C060000            	jne	printcustomer
+   121                                  point1:
+   122                                  	;write
+   123 00000029 BA01000000              	mov	edx,	len_crlf
+   124 0000002E B9[FC030000]            	mov	ecx,	crlf
+   125 00000033 BB01000000              	mov	ebx,	1
+   126 00000038 B804000000              	mov	eax,	4
+   127 0000003D CD80                    	int	0x80
+   128                                  	;end write
+   129                                  	;write
+   130 0000003F BA05000000              	mov	edx,	len_notice2
+   131 00000044 B9[FE020000]            	mov	ecx,	notice2
+   132 00000049 BB01000000              	mov	ebx,	1
+   133 0000004E B804000000              	mov	eax,	4
+   134 00000053 CD80                    	int	0x80
+   135                                  	;end write
+   136                                  	
+   137 00000055 803D[90020000]00        	cmp	BYTE [good],	0	
+   138 0000005C 7416                    	je	point2
+   139                                  	
+   140                                  	;write
+   141 0000005E 66BA0A00                	mov	dx,	10	;length of good
+   142 00000062 3E668B0D[90020000]      	mov	cx,	[ds:good]
+   143 0000006A 66BB0100                	mov	bx,	1
+   144 0000006E 66B80400                	mov	ax,	4
+   145 00000072 CD80                    	int	0x80
+   146                                  	;end write
+   147                                  point2:	
+   148                                  	;write
+   149 00000074 BA01000000              	mov	edx,	len_crlf
+   150 00000079 B9[FC030000]            	mov	ecx,	crlf
+   151 0000007E BB01000000              	mov	ebx,	1
+   152 00000083 B804000000              	mov	eax,	4
+   153 00000088 CD80                    	int	0x80
+   154                                  	;end write
+   155                                  	;write
+   156 0000008A BA09000000              	mov	edx,	len_label1
+   157 0000008F B9[AC030000]            	mov	ecx,	label1
+   158 00000094 BB01000000              	mov	ebx,	1
+   159 00000099 B804000000              	mov	eax,	4
+   160 0000009E CD80                    	int	0x80
+   161                                  	;end write
+   162                                  	;write
+   163 000000A0 BA08000000              	mov	edx,	len_label2
+   164 000000A5 B9[B5030000]            	mov	ecx,	label2
+   165 000000AA BB01000000              	mov	ebx,	1
+   166 000000AF B804000000              	mov	eax,	4
+   167 000000B4 CD80                    	int	0x80
+   168                                  	;end write
+   169                                  	;write
+   170 000000B6 BA07000000              	mov	edx,	len_label3
+   171 000000BB B9[BD030000]            	mov	ecx,	label3
+   172 000000C0 BB01000000              	mov	ebx,	1
+   173 000000C5 B804000000              	mov	eax,	4
+   174 000000CA CD80                    	int	0x80
+   175                                  	;end write
+   176                                  	;write
+   177 000000CC BA0B000000              	mov	edx,	len_label4
+   178 000000D1 B9[C4030000]            	mov	ecx,	label4
+   179 000000D6 BB01000000              	mov	ebx,	1
+   180 000000DB B804000000              	mov	eax,	4
+   181 000000E0 CD80                    	int	0x80
+   182                                  	;end write
+   183                                  	;write
+   184 000000E2 BA08000000              	mov	edx,	len_label5
+   185 000000E7 B9[CF030000]            	mov	ecx,	label5
+   186 000000EC BB01000000              	mov	ebx,	1
+   187 000000F1 B804000000              	mov	eax,	4
+   188 000000F6 CD80                    	int	0x80
+   189                                  	;end write
+   190                                  	;write
+   191 000000F8 BA0A000000              	mov	edx,	len_label6
+   192 000000FD B9[D7030000]            	mov	ecx,	label6
+   193 00000102 BB01000000              	mov	ebx,	1
+   194 00000107 B804000000              	mov	eax,	4
+   195 0000010C CD80                    	int	0x80
+   196                                  	;end write
+   197                                  	;write
+   198 0000010E BA08000000              	mov	edx,	len_label7
+   199 00000113 B9[E1030000]            	mov	ecx,	label7
+   200 00000118 BB01000000              	mov	ebx,	1
+   201 0000011D B804000000              	mov	eax,	4
+   202 00000122 CD80                    	int	0x80
+   203                                  	;end write
+   204                                  	;write
+   205 00000124 BA0B000000              	mov	edx,	len_label8
+   206 00000129 B9[E9030000]            	mov	ecx,	label8
+   207 0000012E BB01000000              	mov	ebx,	1
+   208 00000133 B804000000              	mov	eax,	4
+   209 00000138 CD80                    	int	0x80
+   210                                  	;end write
+   211                                  	;write
+   212 0000013A BA08000000              	mov	edx,	len_label9
+   213 0000013F B9[F4030000]            	mov	ecx,	label9
+   214 00000144 BB01000000              	mov	ebx,	1
+   215 00000149 B804000000              	mov	eax,	4
+   216 0000014E CD80                    	int	0x80
+   217                                  	;end write
+   218                                  
+   219                                  	;write
+   220 00000150 BA20000000              	mov	edx,	len_notice3
+   221 00000155 B9[03030000]            	mov	ecx,	notice3
+   222 0000015A BB01000000              	mov	ebx,	1
+   223 0000015F B804000000              	mov	eax,	4
+   224 00000164 CD80                    	int	0x80
+   225                                  	;end write
+   226                                  
+   227                                  	;read
+   228 00000166 BA0A000000              	mov	edx,	len_opt
+   229 0000016B B9[92020000]            	mov	ecx,	opt	
+   230 00000170 BB00000000              	mov	ebx,	0
+   231 00000175 B803000000              	mov	eax,	3
+   232 0000017A CD80                    	int	0x80
+   233                                  	;end read
+   234                                  	;write
+   235                                  	;mov	edx,	len_opt
+   236                                  	;mov	ecx,	opt
+   237                                  	;mov	ebx,	1
+   238                                  	;mov	eax,	4
+   239                                  	;int	0x80
+   240                                  	;end write
+   241 0000017C 803D[92020000]31        	cmp	BYTE [opt],	"1"
+   242 00000183 746D                    	je	task1
+   243 00000185 803D[92020000]32        	cmp	BYTE [opt],	"2"
+   244 0000018C 0F842B010000            	je	task2
+   245 00000192 803D[92020000]33        	cmp	BYTE [opt],	"3"
+   246 00000199 0F84C0010000            	je	task3
+   247 0000019F 803D[92020000]34        	cmp	BYTE [opt],	"4"
+   248 000001A6 0F8418020000            	je	task4
+   249 000001AC 803D[92020000]35        	cmp	BYTE [opt],	"5"
+   250 000001B3 0F84E6020000            	je	task5
+   251 000001B9 803D[92020000]36        	cmp	BYTE [opt],	"6"
+   252 000001C0 0F840A030000            	je	task6
+   253 000001C6 803D[92020000]37        	cmp	BYTE [opt],	"7"
+   254 000001CD 0F842E030000            	je	task7
+   255 000001D3 803D[92020000]38        	cmp	BYTE [opt],	"8"
+   256 000001DA 0F8452030000            	je	task8
+   257 000001E0 803D[92020000]39        	cmp	BYTE [opt],	"9"
+   258 000001E7 0F847E030000            	je	task9
+   259 000001ED E90EFEFFFF              	jmp	menu
+   260                                  ;==============================================================================
+   261                                  task1:
+   262                                  	;write
+   263 000001F2 BA09000000              	mov	edx,	len_label1
+   264 000001F7 B9[AC030000]            	mov	ecx,	label1
+   265 000001FC BB01000000              	mov	ebx,	1
+   266 00000201 B804000000              	mov	eax,	4
+   267 00000206 CD80                    	int	0x80
+   268                                  	;end write
+   269                                  ;===================================================
+   270                                  	;write
+   271 00000208 BA06000000              	mov	edx,	len_notice5
+   272 0000020D B9[40030000]            	mov	ecx,	notice5
+   273 00000212 BB01000000              	mov	ebx,	1
+   274 00000217 B804000000              	mov	eax,	4
+   275 0000021C CD80                    	int	0x80
+   276                                  	;end write
+   277                                  	;read in_name
+   278 0000021E BA14000000              	mov	edx,	len_in_name
+   279 00000223 B9[A6020000]            	mov	ecx,	in_name
+   280 00000228 BB00000000              	mov	ebx,	0
+   281 0000022D B803000000              	mov	eax,	3
+   282 00000232 CD80                    	int	0x80
+   283                                  	;end read in_name
+   284                                  	;write
+   285 00000234 BA07000000              	mov	edx,	len_notice6
+   286 00000239 B9[46030000]            	mov	ecx,	notice6
+   287 0000023E BB01000000              	mov	ebx,	1
+   288 00000243 B804000000              	mov	eax,	4
+   289 00000248 CD80                    	int	0x80
+   290                                  	;end write
+   291                                  	;read in_pwd
+   292 0000024A BA14000000              	mov	edx,	len_in_pwd
+   293 0000024F B9[BA020000]            	mov	ecx,	in_pwd
+   294 00000254 BB00000000              	mov	ebx,	0
+   295 00000259 B803000000              	mov	eax,	3
+   296 0000025E CD80                    	int	0x80
+   297                                  	;end read in_pwd
+   298                                  	;write
+   299                                  	;mov	edx,	len_in_name
+   300                                  	;mov	ecx,	in_name
+   301                                  	;mov	ebx,	1
+   302                                  	;mov	eax,	4
+   303                                  	;int	0x80
+   304                                  	;end write
+   305                                  	;write
+   306                                  	;mov	edx,	len_in_pwd
+   307                                  	;mov	ecx,	in_pwd
+   308                                  	;mov	ebx,	1
+   309                                  	;mov	eax,	4
+   310                                  	;int	0x80
+   311                                  	;end write
+   312                                  	
+   313 00000260 803D[A6020000]0D        	cmp	BYTE [in_name],	0DH
+   314 00000267 0F8493FDFFFF            	je	menu
+   315 0000026D 66BE0000                	mov	si,	0
+   316 00000271 66BD[0000]              	mov	bp,	bname
+   317 00000275 66BB[A602]              	mov	bx,	in_name
+   318 00000279 66BF1400                	mov	di,	nlength
+   319                                  loopa:
+   320 0000027D 3E678A32                	mov	dh,	BYTE [ds:bp+si]
+   321 00000281 3E678A10                	mov	dl,	BYTE [ds:bx+si]
+   322 00000285 80FE00                  	cmp	dh,	0
+   323 00000288 0F8410030000            	je	cmppasswd
+   324 0000028E 38D6                    	cmp	dh,	dl
+   325 00000290 0F8535030000            	jne	loginerror
+   326 00000296 6646                    	inc	si
+   327 00000298 664F                    	dec	di
+   328 0000029A 0F8460FDFFFF            	je	menu
+   329 000002A0 75DB                    	jne	loopa
+   330                                  
+   331                                  ;===================================================
+   332                                  	;read
+   333 000002A2 BA0A000000              	mov	edx,	len_anykey
+   334 000002A7 B9[9C020000]            	mov	ecx,	anykey
+   335 000002AC BB00000000              	mov	ebx,	0
+   336 000002B1 B803000000              	mov	eax,	3
+   337 000002B6 CD80                    	int	0x80
+   338                                  	;end read
+   339 000002B8 E943FDFFFF              	jmp	menu
+   340                                  task2:
+   341                                  	;write
+   342 000002BD BA08000000              	mov	edx,	len_label2
+   343 000002C2 B9[B5030000]            	mov	ecx,	label2
+   344 000002C7 BB01000000              	mov	ebx,	1
+   345 000002CC B804000000              	mov	eax,	4
+   346 000002D1 CD80                    	int	0x80
+   347                                  	;end write
+   348                                  	;write
+   349 000002D3 BA0D000000              	mov	edx,	len_notice9
+   350 000002D8 B9[65030000]            	mov	ecx,	notice9
+   351 000002DD BB01000000              	mov	ebx,	1
+   352 000002E2 B804000000              	mov	eax,	4
+   353 000002E7 CD80                    	int	0x80
+   354                                  	;end write
+   355                                  	;read in_good
+   356 000002E9 BA14000000              	mov	edx,	len_in_good
+   357 000002EE B9[CE020000]            	mov	ecx,	in_good
+   358 000002F3 BB00000000              	mov	ebx,	0
+   359 000002F8 B803000000              	mov	eax,	3
+   360 000002FD CD80                    	int	0x80
+   361                                  	;end read in_good
+   362                                  	
+   363                                  	;write in_good
+   364                                  	;mov	edx,	len_in_good
+   365                                  	;mov	ecx,	in_good
+   366                                  	;mov	ebx,	1
+   367                                  	;mov	eax,	4
+   368                                  	;int	0x80
+   369                                  	;end write in)good
+   370                                  	
+   371 000002FF 66BD[1A00]              	mov	bp,	ga1
+   372 00000303 66BB[CE02]              	mov	bx,	in_good
+   373 00000307 6683ED15                	sub	bp,	21
+   374 0000030B B000                    	mov	al,	0
+   375                                  loopc:
+   376 0000030D FEC0                    	inc	al
+   377 0000030F 3C1F                    	cmp	al,	N+1
+   378 00000311 0F8469030000            	je	notfound
+   379 00000317 6683C515                	add	bp,	21
+   380 0000031B 66BE0000                	mov	si,	0
+   381 0000031F 66BF0A00                	mov	di,	glength
+   382                                  loopf:
+   383 00000323 3E678A32                	mov	dh,	BYTE [ds:bp+si]
+   384 00000327 3E678A10                	mov	dl,	BYTE [ds:bx+si]
+   385 0000032B 80FE00                  	cmp	dh,	0
+   386 0000032E 0F842C030000            	je	found
+   387 00000334 38D6                    	cmp	dh,	dl
+   388 00000336 75D5                    	jne	loopc
+   389 00000338 6646                    	inc	si
+   390 0000033A 664F                    	dec	di
+   391 0000033C 0F8429020000            	je	task9
+   392 00000342 75DF                    	jne	loopf
+   393                                  
+   394                                  	;read
+   395 00000344 BA0A000000              	mov	edx,	len_anykey
+   396 00000349 B9[9C020000]            	mov	ecx,	anykey
+   397 0000034E BB00000000              	mov	ebx,	0
+   398 00000353 B803000000              	mov	eax,	3
+   399 00000358 CD80                    	int	0x80
+   400                                  	;end read
+   401 0000035A E9A1FCFFFF              	jmp	menu
+   402                                  task3:
+   403                                  	;write
+   404 0000035F BA07000000              	mov	edx,	len_label3
+   405 00000364 B9[BD030000]            	mov	ecx,	label3
+   406 00000369 BB01000000              	mov	ebx,	1
+   407 0000036E B804000000              	mov	eax,	4
+   408 00000373 CD80                    	int	0x80
+   409                                  	;end write
+   410                                  	
+   411 00000375 66833D[90020000]00      	cmp 	WORD [good],	0
+   412 0000037D 0F845F030000            	je	nogood
+   413 00000383 668B35[90020000]        	mov	si,	WORD [good]
+   414 0000038A 678A4411                	mov	al,	BYTE [si+17]
+   415 0000038E 678A6412                	mov	ah,	BYTE [si+18]
+   416 00000392 66673B440F              	cmp	ax,	WORD [si+15]
+   417 00000397 0F8476030000            	je	empty
+   418 0000039D 0401                    	add	al,	1
+   419 0000039F 80D400                  	adc	ah,	0
+   420 000003A2 6667894411              	mov	WORD [si+17],	ax
+   421 000003A7 EB1B                    	jmp	task4
+   422                                  	
+   423                                  
+   424                                  	;read
+   425 000003A9 BA0A000000              	mov	edx,	len_anykey
+   426 000003AE B9[9C020000]            	mov	ecx,	anykey
+   427 000003B3 BB00000000              	mov	ebx,	0
+   428 000003B8 B803000000              	mov	eax,	3
+   429 000003BD CD80                    	int	0x80
+   430                                  	;end read
+   431 000003BF E93CFCFFFF              	jmp	menu
+   432                                  task4:
+   433                                  	;write
+   434 000003C4 BA0B000000              	mov	edx,	len_label4
+   435 000003C9 B9[C4030000]            	mov	ecx,	label4
+   436 000003CE BB01000000              	mov	ebx,	1
+   437 000003D3 B804000000              	mov	eax,	4
+   438 000003D8 CD80                    	int	0x80
+   439                                  	;end write
+   440                                  	
+   441 000003DA 66BD[1A00]              	mov	bp,	ga1
+   442 000003DE 66BE0000                	mov	si,	0
+   443                                  loopj:
+   444                                  ;=====================================================
+   445 000003E2 66C705[E2020000]00-     	mov	WORD [temp1],	0
+   445 000003EA 00                 
+   446 000003EB 66C705[E4020000]00-     	mov	WORD [temp2],	0
+   446 000003F3 00                 
+   447 000003F4 3E66678B460F            	mov	ax,	WORD [ds:bp+15]
+   448 000003FA 66D1E0                  	sal	ax,	1
+   449 000003FD 66A3[E2020000]          	mov	[temp1],	ax
+   450 00000403 3E66678B4611            	mov	ax,	WORD [ds:bp+17]
+   451 00000409 66BB8000                	mov	bx,	128
+   452 0000040D 66F7E3                  	mul	bx
+   453 00000410 66F735[E2020000]        	div	WORD [temp1]
+   454 00000417 66A3[E2020000]          	mov	[temp1],	ax
+   455 0000041D 3E678A460A              	mov	al,	[ds:bp+10]
+   456 00000422 B400                    	mov	ah,	0
+   457                                  	;mov	dx,	0
+   458                                  	;mov	bx,	10
+   459                                  	;div	bx
+   460 00000424 3E66678B5E0D            	mov	bx,	WORD [ds:bp+13]
+   461                                  	;mov	[temp2],	bx
+   462 0000042A 66F7E3                  	mul	bx
+   463 0000042D 66BB0A00                	mov	bx,	10
+   464 00000431 66F7F3                  	div	bx
+   465 00000434 66A3[E4020000]          	mov	[temp2],	ax
+   466 0000043A 3E66678B460B            	mov	ax,	WORD [ds:bp+11]
+   467 00000440 66BB8000                	mov	bx,	128
+   468 00000444 66F7E3                  	mul	bx
+   469 00000447 66F735[E4020000]        	div	WORD [temp2]
+   470 0000044E 660305[E2020000]        	add	ax,	WORD [temp1]
+   471                                  	
+   472                                  ;=========================================================
+   473 00000455 3E6667894613            	mov	WORD [ds:bp+19],	ax
+   474                                  	;printf
+   475                                  	
+   476 0000045B 6683C601                	add	si,	1
+   477 0000045F 6683FE1E                	cmp	si,	N
+   478 00000463 7409                    	je	point3
+   479 00000465 6683C515                	add	bp,	21
+   480 00000469 E974FFFFFF              	jmp	loopj
+   481                                  
+   482                                  point3:
+   483                                  	;write
+   484 0000046E BA0C000000              	mov	edx,	len_notice14
+   485 00000473 B9[A0030000]            	mov	ecx,	notice14
+   486 00000478 BB01000000              	mov	ebx,	1
+   487 0000047D B804000000              	mov	eax,	4
+   488 00000482 CD80                    	int	0x80
+   489                                  	;end write
+   490                                  	;read
+   491 00000484 BA0A000000              	mov	edx,	len_anykey
+   492 00000489 B9[9C020000]            	mov	ecx,	anykey
+   493 0000048E BB00000000              	mov	ebx,	0
+   494 00000493 B803000000              	mov	eax,	3
+   495 00000498 CD80                    	int	0x80
+   496                                  	;end read
+   497 0000049A E961FBFFFF              	jmp	menu
+   498                                  task5:
+   499                                  	;write
+   500 0000049F BA08000000              	mov	edx,	len_label5
+   501 000004A4 B9[CF030000]            	mov	ecx,	label5
+   502 000004A9 BB01000000              	mov	ebx,	1
+   503 000004AE B804000000              	mov	eax,	4
+   504 000004B3 CD80                    	int	0x80
+   505                                  	;end write
+   506                                  	
+   507                                  	;read
+   508 000004B5 BA0A000000              	mov	edx,	len_anykey
+   509 000004BA B9[9C020000]            	mov	ecx,	anykey
+   510 000004BF BB00000000              	mov	ebx,	0
+   511 000004C4 B803000000              	mov	eax,	3
+   512 000004C9 CD80                    	int	0x80
+   513                                  	;end read
+   514 000004CB E930FBFFFF              	jmp	menu
+   515                                  task6:
+   516                                  	;write
+   517 000004D0 BA0A000000              	mov	edx,	len_label6
+   518 000004D5 B9[D7030000]            	mov	ecx,	label6
+   519 000004DA BB01000000              	mov	ebx,	1
+   520 000004DF B804000000              	mov	eax,	4
+   521 000004E4 CD80                    	int	0x80
+   522                                  	;end write
+   523                                  	
+   524                                  	;read
+   525 000004E6 BA0A000000              	mov	edx,	len_anykey
+   526 000004EB B9[9C020000]            	mov	ecx,	anykey
+   527 000004F0 BB00000000              	mov	ebx,	0
+   528 000004F5 B803000000              	mov	eax,	3
+   529 000004FA CD80                    	int	0x80
+   530                                  	;end read
+   531 000004FC E9FFFAFFFF              	jmp	menu
+   532                                  task7:
+   533                                  	;write
+   534 00000501 BA08000000              	mov	edx,	len_label7
+   535 00000506 B9[E1030000]            	mov	ecx,	label7
+   536 0000050B BB01000000              	mov	ebx,	1
+   537 00000510 B804000000              	mov	eax,	4
+   538 00000515 CD80                    	int	0x80
+   539                                  	;end write
+   540                                  	
+   541                                  	;read
+   542 00000517 BA0A000000              	mov	edx,	len_anykey
+   543 0000051C B9[9C020000]            	mov	ecx,	anykey
+   544 00000521 BB00000000              	mov	ebx,	0
+   545 00000526 B803000000              	mov	eax,	3
+   546 0000052B CD80                    	int	0x80
+   547                                  	;end read
+   548 0000052D E9CEFAFFFF              	jmp	menu
+   549                                  task8:
+   550                                  	;write
+   551 00000532 BA0B000000              	mov	edx,	len_label8
+   552 00000537 B9[E9030000]            	mov	ecx,	label8
+   553 0000053C BB01000000              	mov	ebx,	1
+   554 00000541 B804000000              	mov	eax,	4
+   555 00000546 CD80                    	int	0x80
+   556                                  	;end write
+   557                                  	
+   558 00000548 668CC8                  	mov	ax,	cs
+   559 0000054B E91E020000              	jmp	wrhax
+   560                                  
+   561                                  point5:
+   562                                  	;read
+   563 00000550 BA0A000000              	mov	edx,	len_anykey
+   564 00000555 B9[9C020000]            	mov	ecx,	anykey
+   565 0000055A BB00000000              	mov	ebx,	0
+   566 0000055F B803000000              	mov	eax,	3
+   567 00000564 CD80                    	int	0x80
+   568                                  	;end read
+   569 00000566 E995FAFFFF              	jmp	menu
+   570                                  task9:
+   571                                  	;write
+   572 0000056B BA08000000              	mov	edx,	len_label9
+   573 00000570 B9[F4030000]            	mov	ecx,	label9
+   574 00000575 BB01000000              	mov	ebx,	1
+   575 0000057A B804000000              	mov	eax,	4
+   576 0000057F CD80                    	int	0x80
+   577                                  	;end write
+   578                                  	
+   579 00000581 E913020000              	jmp	exit
+   580                                  ;==============================================================================
+   581                                  setauth0:
+   582 00000586 B000                    	mov	al,	0	;0->auth
+   583 00000588 A2[15000000]            	mov	[auth],	al
+   584 0000058D E96EFAFFFF              	jmp	menu
+   585                                  setauth1:
+   586 00000592 B001                    	mov	al,	1	;1->auth
+   587 00000594 A2[15000000]            	mov	[auth],	al
+   588 00000599 E962FAFFFF              	jmp	menu
+   589                                  cmppasswd:
+   590 0000059E 66BE0000                	mov	si,	0
+   591 000005A2 66BD[0B00]              	mov	bp,	bpass
+   592 000005A6 66BB[BA02]              	mov	bx,	in_pwd
+   593 000005AA 66BF1400                	mov	di,	plength
+   594                                  loopb:
+   595 000005AE 3E678A32                	mov	dh,	BYTE [ds:bp+si]
+   596 000005B2 3E678A10                	mov	dl,	BYTE [ds:bx+si]
+   597 000005B6 80FE00                  	cmp	dh,	0
+   598 000005B9 743E                    	je	loginsuccess
+   599 000005BB 38D6                    	cmp	dh,	dl
+   600 000005BD 750C                    	jne	loginerror
+   601 000005BF 6646                    	inc	si
+   602 000005C1 664F                    	dec	di
+   603 000005C3 0F8437FAFFFF            	je	menu
+   604 000005C9 75E3                    	jne	loopb
+   605                                  loginerror:
+   606                                  	;write
+   607 000005CB BA0B000000              	mov	edx,	len_notice7
+   608 000005D0 B9[4D030000]            	mov	ecx,	notice7
+   609 000005D5 BB01000000              	mov	ebx,	1
+   610 000005DA B804000000              	mov	eax,	4
+   611 000005DF CD80                    	int	0x80
+   612                                  	;read
+   613 000005E1 BA0A000000              	mov	edx,	len_anykey
+   614 000005E6 B9[9C020000]            	mov	ecx,	anykey
+   615 000005EB BB00000000              	mov	ebx,	0
+   616 000005F0 B803000000              	mov	eax,	3
+   617 000005F5 CD80                    	int	0x80
+   618                                  	;end read
+   619 000005F7 EB8D                    	jmp	setauth0
+   620                                  loginsuccess:
+   621                                  	;write
+   622 000005F9 BA0D000000              	mov	edx,	len_notice8
+   623 000005FE B9[58030000]            	mov	ecx,	notice8
+   624 00000603 BB01000000              	mov	ebx,	1
+   625 00000608 B804000000              	mov	eax,	4
+   626 0000060D CD80                    	int	0x80
+   627                                  	;read
+   628 0000060F BA0A000000              	mov	edx,	len_anykey
+   629 00000614 B9[9C020000]            	mov	ecx,	anykey
+   630 00000619 BB00000000              	mov	ebx,	0
+   631 0000061E B803000000              	mov	eax,	3
+   632 00000623 CD80                    	int	0x80
+   633                                  	;end read
+   634 00000625 E968FFFFFF              	jmp	setauth1
+   635                                  printbname:
+   636                                  	;write
+   637 0000062A BA0A000000              	mov	edx,	len_boss
+   638 0000062F B9[E7020000]            	mov	ecx,	boss
+   639 00000634 BB01000000              	mov	ebx,	1
+   640 00000639 B804000000              	mov	eax,	4
+   641 0000063E CD80                    	int	0x80
+   642                                  	;end write
+   643 00000640 E9E4F9FFFF              	jmp	point1
+   644                                  printcustomer:
+   645                                  	;write
+   646 00000645 BA08000000              	mov	edx,	len_customer
+   647 0000064A B9[F1020000]            	mov	ecx,	customer
+   648 0000064F BB01000000              	mov	ebx,	1
+   649 00000654 B804000000              	mov	eax,	4
+   650 00000659 CD80                    	int	0x80
+   651                                  	;end write
+   652 0000065B E9C9F9FFFF              	jmp	point1
+   653                                  found:
+   654                                  	;write
+   655 00000660 BA06000000              	mov	edx,	len_notice10
+   656 00000665 B9[72030000]            	mov	ecx,	notice10
+   657 0000066A BB01000000              	mov	ebx,	1
+   658 0000066F B804000000              	mov	eax,	4
+   659 00000674 CD80                    	int	0x80
+   660                                  	;end write
+   661 00000676 3E66892D[90020000]      	mov	WORD [ds:good],	bp
+   662 0000067E EB31                    	jmp	showgood
+   663                                  notfound:
+   664                                  	;write
+   665 00000680 BA09000000              	mov	edx,	len_notice11
+   666 00000685 B9[78030000]            	mov	ecx,	notice11
+   667 0000068A BB01000000              	mov	ebx,	1
+   668 0000068F B804000000              	mov	eax,	4
+   669 00000694 CD80                    	int 0x80
+   670                                  	;end write
+   671                                  	;read
+   672 00000696 BA0A000000              	mov	edx,	len_anykey
+   673 0000069B B9[9C020000]            	mov	ecx,	anykey
+   674 000006A0 BB00000000              	mov	ebx,	0
+   675 000006A5 B803000000              	mov	eax,	3
+   676 000006AA CD80                    	int	0x80
+   677                                  	;end read
+   678 000006AC E94FF9FFFF              	jmp	menu
+   679                                  showgood:
+   680                                  	;write
+   681 000006B1 66BA0A00                	mov	dx,	10
+   682                                  	;mov	ecx,	in_good
+   683 000006B5 3E668B0D[90020000]      	mov	cx,	[ds:good]
+   684                                  	;mov	ecx,	0000001AH
+   685                                  	;mov	ecx,	good	
+   686 000006BD 66BB0100                	mov	bx,	1
+   687 000006C1 66B80400                	mov	ax,	4
+   688 000006C5 CD80                    	int	0x80
+   689                                  	;end write
+   690                                  	;read
+   691 000006C7 BA0A000000              	mov	edx,	len_anykey
+   692 000006CC B9[9C020000]            	mov	ecx,	anykey
+   693 000006D1 BB00000000              	mov	ebx,	0
+   694 000006D6 B803000000              	mov	eax,	3
+   695 000006DB CD80                    	int	0x80
+   696                                  	;end read
+   697 000006DD E91EF9FFFF              	jmp	menu
+   698                                  nogood:
+   699                                  	;write
+   700 000006E2 BA12000000              	mov	edx,	len_notice12
+   701 000006E7 B9[81030000]            	mov	ecx,	notice12
+   702 000006EC BB01000000              	mov	ebx,	1
+   703 000006F1 B804000000              	mov	eax,	4
+   704 000006F6 CD80                    	int	0x80
+   705                                  	;end write
+   706                                  	;read
+   707 000006F8 BA0A000000              	mov	edx,	len_anykey
+   708 000006FD B9[9C020000]            	mov	ecx,	anykey
+   709 00000702 BB00000000              	mov	ebx,	0
+   710 00000707 B803000000              	mov	eax,	3
+   711 0000070C CD80                    	int	0x80
+   712                                  	;end read
+   713 0000070E E9EDF8FFFF              	jmp	menu
+   714                                  empty:
+   715                                  	;write
+   716 00000713 BA0D000000              	mov	edx,	len_notice13
+   717 00000718 B9[93030000]            	mov	ecx,	notice13
+   718 0000071D BB01000000              	mov	ebx,	1
+   719 00000722 B804000000              	mov	eax,	4
+   720 00000727 CD80                    	int	0x80
+   721                                  	;end write
+   722                                  	;read
+   723 00000729 BA0A000000              	mov	edx,	len_anykey
+   724 0000072E B9[9C020000]            	mov	ecx,	anykey
+   725 00000733 BB00000000              	mov	ebx,	0
+   726 00000738 B803000000              	mov	eax,	3
+   727 0000073D CD80                    	int	0x80
+   728                                  	;end read
+   729 0000073F E9BCF8FFFF              	jmp	menu
+   730                                  ;=========================================================================
+   731                                  disp_ch:	
+   732                                  	;push	edx
+   733                                  	;push	eax
+   734                                  	;mov	ah,	0x02
+   735                                  	;mov	dl,	al
+   736                                  	;int	0x02
+   737 00000744 6652                    	push	dx
+   738 00000746 6650                    	push	ax
+   739                                  	;write char
+   740 00000748 B900000000              	mov	ecx,	0
+   741 0000074D A2[E6020000]            	mov	[char],	al
+   742 00000752 BA01000000              	mov	edx,	len_char
+   743 00000757 B9[E6020000]            	mov	ecx,	char
+   744 0000075C BB01000000              	mov	ebx,	1
+   745 00000761 B804000000              	mov	eax,	4
+   746 00000766 CD80                    	int	0x80
+   747                                  	;end write char	
+   748                                  	;pop	eax
+   749                                  	;pop	edx	
+   750                                  	;ret
+   751 00000768 6658                    	pop	ax
+   752 0000076A 665A                    	pop	dx
+   753 0000076C EB1E                    	jmp	point4	
+   754                                  wrhax:
+   755 0000076E 6650                    	push	ax
+   756 00000770 6652                    	push	dx
+   757 00000772 6689C2                  	mov	dx,	ax
+   758 00000775 66BE0400                	mov	si,	4
+   759                                  l1:
+   760 00000779 B104                    	mov	cl,	4
+   761 0000077B 66D3C2                  	rol	dx,	cl
+   762 0000077E 88D0                    	mov	al,	dl
+   763 00000780 240F                    	and	al,	0x0F
+   764 00000782 0430                    	add	al,	0x30
+   765 00000784 3C3A                    	cmp	al,	0x3A
+   766 00000786 7C02                    	jl	printit
+   767 00000788 0407                    	add	al,	0x07
+   768                                  printit:
+   769 0000078A EBB8                    	jmp	disp_ch
+   770                                  point4:	;sub	si,	1
+   771                                  	;cmp	si,	0
+   772 0000078C 664E                    	dec	si
+   773 0000078E 75E9                    	jnz	l1
+   774 00000790 665A                    	pop	dx
+   775 00000792 6658                    	pop	ax	
+   776                                  	;ret
+   777 00000794 E9B7FDFFFF              	jmp	point5
+   778                                  ;==============================================================================
+   779                                  ;exit
+   780                                  exit:
+   781 00000799 BB00000000              	mov	ebx,	0
+   782 0000079E B801000000              	mov	eax,	1
+   783 000007A3 CD80                    	int	0x80
+   784                                  	
+   785                                  	;times	2048-($-$$)	db	0
+   786                                  	;dw	0xaa55
+   787                                  
+   788                                  
+   789                                  
+   790                                  
+   791                                  
+   792                                  
+   793                                  
+   794                                  
+   795                                  
+   796                                  
+   797                                  
