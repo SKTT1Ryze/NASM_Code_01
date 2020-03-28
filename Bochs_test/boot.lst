@@ -1,0 +1,25 @@
+     1                                  ;boot.asm
+     2                                  ;test file for bochs
+     3                                  ;hustccc
+     4                                  ;2020/3/27
+     5                                  ;Archlinux
+     6                                  org	07c00h		;goto 7c00
+     7 00000000 8CC8                    	mov	ax,	cs
+     8 00000002 8ED8                    	mov	ds,	ax
+     9 00000004 8EC0                    	mov	es,	ax
+    10 00000006 E80200                  	call	DispStr	;loop call
+    11 00000009 EBFE                    	jmp	$	
+    12                                  DispStr:
+    13 0000000B B8[1E00]                	mov	ax,	BootMessage
+    14 0000000E 89C5                    	mov	bp,	ax	;es:dp=string address
+    15 00000010 B91000                  	mov	cx,	16	;cx=length of string
+    16 00000013 B80113                  	mov	ax,	01301h
+    17 00000016 BB0C00                  	mov	bx,	000ch;
+    18 00000019 B200                    	mov	dl,	0
+    19 0000001B CD10                    	int	10h;
+    20 0000001D C3                      	ret
+    21                                  BootMessage:
+    22 0000001E 48656C6C6F2C4F5320-     	db	"Hello,OS World!"
+    22 00000027 576F726C6421       
+    23 0000002D 00<rept>                	times	510-($-$$)	db	0
+    24 000001FE 55AA                    	dw	0xaa55;

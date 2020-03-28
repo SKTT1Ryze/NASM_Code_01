@@ -1,0 +1,17 @@
+     1                                  ; hello.asm 
+     2                                  section .data            ; 数据段声明
+     3 00000000 48656C6C6F776F726C-             msg db "Helloworld", 0xA     ; 要输出的字符串
+     3 00000009 640A               
+     4                                          len equ $ - msg                 ; 字串长度
+     5                                  section .text            ; 代码段声明
+     6                                  global _start            ; 指定入口函数
+     7                                  _start:                  ; 在屏幕上显示一个字符串
+     8 00000000 66BA0B000000                    mov edx, len     ; 参数三：字符串长度
+     9 00000006 66B9[00000000]                  mov ecx, msg     ; 参数二：要显示的字符串
+    10 0000000C 66BB01000000                    mov ebx, 1       ; 参数一：文件描述符(stdout) 
+    11 00000012 66B804000000                    mov eax, 4       ; 系统调用号(sys_write) 
+    12 00000018 CD80                            int 0x80         ; 调用内核功能
+    13                                                           ; 退出程序
+    14 0000001A 66BB00000000                    mov ebx, 0       ; 参数一：退出代码
+    15 00000020 66B801000000                    mov eax, 1       ; 系统调用号(sys_exit) 
+    16 00000026 CD80                            int 0x80         ; 调用内核功能
