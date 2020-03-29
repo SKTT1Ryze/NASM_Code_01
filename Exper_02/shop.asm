@@ -103,9 +103,18 @@ len_crlf	equ	$-crlf
 blank	db	"	",0xA
 len_blank	equ	$-blank
 istest	db	0
-time1	dd	0
-time2	dd	0
-time_interval	dd	0
+timeval1:
+	tv_sec1	dd	0
+	tv_usec1	dd	0
+timeval2:
+	tv_sec2	dd	0
+	tv_usec2	dd	0
+timezone:
+	tz_minutewest	dd	0
+	tz_dsttime	dd	0
+time_interval:
+	tv_sec_interval	dd	0
+	tv_usec_interval	dd	0
 ;==============================================================================
 ;section	.stack			;stack segment
 ;stack	times	200	db	0
@@ -646,12 +655,10 @@ taskA:
 	int	0x80
 	
 	;time1
-	mov	eax,	13
-	mov	ebx,	0
-	int	0x80		;precent time->eax
-	
-	;save precent time in time1
-	mov	[time1],	eax
+	mov	eax,	78
+	mov	ebx,	timeval1	;time1 saved in timeval1
+	mov	ecx,	timezone
+	int	0x80	
 	
 	;loop for test
 	mov	esi,	0
@@ -666,16 +673,19 @@ test_point2:
 	;end loop of test
 	
 	;time2
-	mov	eax,	13
-	mov	ebx,	0
-	int	0x80		;precent time->eax
-	
-	;save precent time in time2
-	mov	[time2],	eax
-	;compute time interval
-	sub	eax,	DWORD [time1]
-	;save in time_interval
-	mov	[time_interval],	eax
+	mov	eax,	78
+	mov	ebx,	timeval2	;time2 save in timeval2
+	mov	ecx,	timezone
+	int	0x80
+
+	;compute the time interval
+	mov	eax,	[tv_usec2]
+	mov	edx,	[tv_sec2]
+	sub	eax,	[tv_usec1]
+	sbb	edx,	[tv_sec1]
+	;save result in time_interval
+	mov	[tv_usec_interval],	eax
+	mov	[tv_sec_interval],	edx
 	
 	;test finish
 	mov	edx,	len_notice16
