@@ -8,10 +8,10 @@ bpass	db	"hustccc",0,0,0	;password
 auth	db	0		;status
 ;default	db	"default",0xA	;default
 ;len_default	equ	$-default
-N	equ	30		;total num of good
-M	equ	1000		;num of loop in test moudel
+N	equ	100		;total num of good
+M	equ	99999		;num of loop in test moudel
 sname	db	"SKT",0		;name of shop
-ga1	db	"bag"		;about goods
+ga1	db	"pen"		;about goods
 	times	7 db	0	;fix
 	db	10		;count
 	dw	35,56,70,25,0
@@ -19,7 +19,11 @@ ga2	db	"book"
 	times	6 db	0
 	db	9
 	dw	12,30,25,5,0
-gan	times	N-2	db	"tempvaule",0,8,15,0,20,0,30,0,2,0,0,0
+gan	times	N-3	db	"tempvaule",0,8,15,0,20,0,30,0,2,0,0,0
+ga3	db	"bag"
+	times	7 db	0
+	db	5
+	dw	10,28,30,6,0
 good	dw	0
 opt	times	10	db	0
 len_opt	equ	10
@@ -70,6 +74,10 @@ notice13	db	"Good is empty"
 len_notice13	equ	$-notice13
 notice14	db	"Compute over"
 len_notice14	equ	$-notice14
+notice15	db	"Test begin",0xA
+len_notice15	equ	$-notice15
+notice16	db	"Test finish",0xA
+len_notice16	equ	$-notice16
 label1	db	"1=>Login",0xA
 len_label1	equ	$-label1
 label2	db	"2=>Find",0xA
@@ -95,6 +103,9 @@ len_crlf	equ	$-crlf
 blank	db	"	",0xA
 len_blank	equ	$-blank
 istest	db	0
+time1	dd	0
+time2	dd	0
+time_interval	dd	0
 ;==============================================================================
 ;section	.stack			;stack segment
 ;stack	times	200	db	0
@@ -268,7 +279,7 @@ point2:
 	cmp	BYTE [opt],	"9"
 	je	task9
 	cmp	BYTE [opt],	"A"
-	je	task10
+	je	taskA
 	jmp	menu
 ;==============================================================================
 task1:
@@ -384,10 +395,10 @@ task2:
 	mov	bp,	ga1
 	mov	bx,	in_good
 	sub	bp,	21
-	mov	al,	0
+	mov	ax,	0
 loopc:
-	inc	al
-	cmp	al,	N+1
+	inc	ax
+	cmp	ax,	N+1
 	je	notfound
 	add	bp,	21
 	mov	si,	0
@@ -414,13 +425,18 @@ loopf:
 	jmp	menu
 task3:
 	;write
+test_point1:
+	;if in test
+	cmp	BYTE [istest],	1
+	je	test_point3
+
 	mov	edx,	len_label3
 	mov	ecx,	label3
 	mov	ebx,	1
 	mov	eax,	4
 	int	0x80
 	;end write
-	
+test_point3:
 	cmp 	WORD [good],	0
 	je	nogood
 	mov	si,	WORD [good]
@@ -428,9 +444,14 @@ task3:
 	mov	ah,	BYTE [si+18]
 	cmp	ax,	WORD [si+15]
 	je	empty
+	;if in test
+	cmp	BYTE [istest],	1
+	je	test_point7
+	
 	add	al,	1
 	adc	ah,	0
 	mov	WORD [si+17],	ax
+test_point7:
 	jmp	task4
 	
 
@@ -443,6 +464,10 @@ task3:
 	;end read
 	jmp	menu
 task4:
+	;if in test
+	cmp	BYTE [istest],	1
+	je	test_point4
+
 	;write
 	mov	edx,	len_label4
 	mov	ecx,	label4
@@ -450,7 +475,7 @@ task4:
 	mov	eax,	4
 	int	0x80
 	;end write
-	
+test_point4:	
 	mov	bp,	ga1
 	mov	si,	0
 loopj:
@@ -493,6 +518,9 @@ loopj:
 	jmp	loopj
 
 point3:
+	;if in test
+	cmp	BYTE [istest],	1
+	je	test_point5
 	;write
 	mov	edx,	len_notice14
 	mov	ecx,	notice14
@@ -500,6 +528,12 @@ point3:
 	mov	eax,	4
 	int	0x80
 	;end write
+test_point5:
+	;if in test
+	cmp	BYTE [istest],	1
+	pop	esi
+	je	test_point2
+	
 	;read
 	mov	edx,	len_anykey
 	mov	ecx,	anykey
@@ -590,7 +624,7 @@ task9:
 	;end write
 	
 	jmp	exit
-task10:
+taskA:
 	;write
 	mov	edx,	len_label10
 	mov	ecx,	label10
@@ -598,7 +632,61 @@ task10:
 	mov	eax,	4
 	int	0x80
 	;end write
+	;buy bag
+	mov	bp,	ga3
+	mov	WORD [good],	bp
 	
+	mov	al,	1	;1->istest
+	mov	[istest],	al
+	;test begin
+	mov	edx,	len_notice15
+	mov	ecx,	notice15
+	mov	ebx,	1
+	mov	eax,	4
+	int	0x80
+	
+	;time1
+	mov	eax,	13
+	mov	ebx,	0
+	int	0x80		;precent time->eax
+	
+	;save precent time in time1
+	mov	[time1],	eax
+	
+	;loop for test
+	mov	esi,	0
+test_loop:
+	push	esi	;save esi
+	jmp	test_point1
+
+test_point2:
+	inc	esi
+	cmp	esi,	M
+	jne	test_loop
+	;end loop of test
+	
+	;time2
+	mov	eax,	13
+	mov	ebx,	0
+	int	0x80		;precent time->eax
+	
+	;save precent time in time2
+	mov	[time2],	eax
+	;compute time interval
+	sub	eax,	DWORD [time1]
+	;save in time_interval
+	mov	[time_interval],	eax
+	
+	;test finish
+	mov	edx,	len_notice16
+	mov	ecx,	notice16
+	mov	ebx,	1
+	mov	eax,	4
+	int	0x80
+
+	mov	al,	0
+	mov	[istest],	al
+
 	;read
 	mov	edx,	len_anykey
 	mov	ecx,	anykey
@@ -606,7 +694,7 @@ task10:
 	mov	eax,	3
 	int	0x80
 	;end read
-	
+	jmp	menu
 ;==============================================================================
 setauth0:
 	mov	al,	0	;0->auth
@@ -742,13 +830,18 @@ nogood:
 	;end read
 	jmp	menu
 empty:
+	;if in test
+	cmp	BYTE [istest],	1
+	pop	esi
+	je	test_point2
+	
 	;write
 	mov	edx,	len_notice13
 	mov	ecx,	notice13
 	mov	ebx,	1
 	mov	eax,	4
 	int	0x80
-	;end write
+	;end write	
 	;read
 	mov	edx,	len_anykey
 	mov	ecx,	anykey
