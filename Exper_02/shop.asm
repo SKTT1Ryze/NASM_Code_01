@@ -1,6 +1,6 @@
-;task 4,Experiment 1
+;task 1,Experiment 2
 ;hustccc
-;2020/3/26
+;2020/3/28
 ;Archlinux
 section	.data	
 bname	db	"chechunchi",0	;boss name
@@ -8,7 +8,7 @@ bpass	db	"hustccc",0,0,0	;password
 auth	db	0		;status
 ;default	db	"default",0xA	;default
 ;len_default	equ	$-default
-N	equ	100		;total num of good
+N	equ	500		;total num of good
 M	equ	9999		;num of loop in test moudel
 sname	db	"SKT",0		;name of shop
 ga1	db	"pen"		;about goods
