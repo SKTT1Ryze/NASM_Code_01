@@ -9,7 +9,7 @@ auth	db	0		;status
 ;default	db	"default",0xA	;default
 ;len_default	equ	$-default
 N	equ	100		;total num of good
-M	equ	99999		;num of loop in test moudel
+M	equ	9999		;num of loop in test moudel
 sname	db	"SKT",0		;name of shop
 ga1	db	"pen"		;about goods
 	times	7 db	0	;fix
@@ -23,7 +23,7 @@ gan	times	N-3	db	"tempvaule",0,8,15,0,20,0,30,0,2,0,0,0
 ga3	db	"bag"
 	times	7 db	0
 	db	5
-	dw	10,28,30,6,0
+	dw	10,28,M,0,0
 good	dw	0
 opt	times	10	db	0
 len_opt	equ	10
@@ -453,14 +453,10 @@ test_point3:
 	mov	ah,	BYTE [si+18]
 	cmp	ax,	WORD [si+15]
 	je	empty
-	;if in test
-	cmp	BYTE [istest],	1
-	je	test_point7
 	
 	add	al,	1
 	adc	ah,	0
 	mov	WORD [si+17],	ax
-test_point7:
 	jmp	task4
 	
 
@@ -492,7 +488,9 @@ loopj:
 	mov	WORD [temp1],	0
 	mov	WORD [temp2],	0
 	mov	ax,	WORD [ds:bp+15]
-	sal	ax,	1
+	;sal	ax,	1
+	mov	bx,	2
+	mul	bx
 	mov	[temp1],	ax
 	mov	ax,	WORD [ds:bp+17]
 	mov	bx,	128

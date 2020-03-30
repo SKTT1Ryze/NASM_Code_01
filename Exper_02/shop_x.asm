@@ -9,7 +9,7 @@ auth	db	0		;status
 ;default	db	"default",0xA	;default
 ;len_default	equ	$-default
 N	equ	100		;total num of good
-M	equ	99999		;num of loop in test moudel
+M	equ	9999		;num of loop in test moudel
 sname	db	"SKT",0		;name of shop
 ga1	db	"pen"		;about goods
 	times	7 db	0	;fix
@@ -23,7 +23,7 @@ gan	times	N-3	db	"tempvaule",0,8,15,0,20,0,30,0,2,0,0,0
 ga3	db	"bag"
 	times	7 db	0
 	db	5
-	dw	10,28,30,6,0
+	dw	10,28,M,0,0
 good	dw	0
 opt	times	10	db	0
 len_opt	equ	10
@@ -113,8 +113,8 @@ timezone:
 	tz_minutewest	dd	0
 	tz_dsttime	dd	0
 time_interval:
-	tv_usec_interval	dd	0
 	tv_sec_interval	dd	0
+	tv_usec_interval	dd	0
 ;==============================================================================
 ;section	.stack			;stack segment
 ;stack	times	200	db	0
@@ -453,12 +453,10 @@ test_point3:
 	mov	ah,	BYTE [si+18]
 	cmp	ax,	WORD [si+15]
 	je	empty
-	;if in test
-	;cmp	BYTE [istest],	1
-	;je	test_point7
 	
-	add	al,	1
-	adc	ah,	0
+	;add	al,	1
+	;adc	ah,	0
+	add	ax,	1
 	mov	WORD [si+17],	ax
 test_point7:
 	jmp	task4
@@ -497,8 +495,14 @@ loopj:
 	;mul	bx
 	mov	[temp1],	ax
 	mov	ax,	WORD [ds:bp+17]
-	mov	bx,	128
-	mul	bx
+
+	;mov	bx,	128
+	;mul	bx
+	mov	cl,	7
+	;mov	dx,	0
+	;shld	dx,	ax,	cl
+	sal	ax,	cl
+
 	div	WORD [temp1]
 	mov	[temp1],	ax
 	mov	al,	[ds:bp+10]
@@ -509,15 +513,22 @@ loopj:
 	div	bx
 	mov	[temp2],	ax
 	mov	ax,	WORD [ds:bp+11]
-	mov	bx,	128
-	mul	bx
+
+	;mov	bx,	128
+	;mul	bx
+	mov	cl,	7
+	;mov	dx,	0
+	;shld	dx,	ax,	cl
+	sal	ax,	cl
+
 	div	WORD [temp2]
 	add	ax,	WORD [temp1]
 	
 ;=========================================================
 	mov	WORD [ds:bp+19],	ax
 	
-	add	si,	1
+	;add	si,	1
+	inc	si
 	cmp	si,	N
 	je	point3
 	add	bp,	21
