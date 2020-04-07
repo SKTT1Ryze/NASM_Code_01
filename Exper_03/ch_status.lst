@@ -1,0 +1,407 @@
+     1                                  ;module:change good status:
+     2                                      ;parameter
+     3                                      ;bx:address of good
+     4                                  ;che chunchi
+     5                                  ;2020/4/6
+     6                                  ;manjaro
+     7                                  ;procedure:10 to 2 printf
+     8                                      ;parameter:
+     9                                      ;si:address of string
+    10                                      ;cx:length of string
+    11                                      ;ax:result
+    12                                  %include "global.h"
+     1                              <1> ;global head file for Experiment 3
+     2                              <1> ;hustccc
+     3                              <1> ;2020/4/6
+     4                              <1> ;Manjaro
+     5                              <1> ;define write
+     6                              <1> %macro  write   2
+     7                              <1>     mov	edx,	%1 ;length of string
+     8                              <1>     mov	ecx,	%2 ;address of string
+     9                              <1>     mov	ebx,	1
+    10                              <1>     mov	eax,	4
+    11                              <1>     int	0x80	
+    12                              <1>     %endmacro
+    13                              <1> ;define read
+    14                              <1> %macro  read    2
+    15                              <1>     mov	edx,	%1 ;length of string
+    16                              <1>     mov	ecx,	%2 ;address of string
+    17                              <1> 	mov	ebx,	0
+    18                              <1> 	mov	eax,	3
+    19                              <1> 	int	0x80
+    20                              <1> 	%endmacro 
+    21                              <1> %macro  write_16   2
+    22                              <1>     mov	dx,	%1 ;length of string
+    23                              <1>     mov	cx,	%2 ;address of string
+    24                              <1>     mov	ebx,	1
+    25                              <1>     mov	eax,	4
+    26                              <1>     int	0x80	
+    27                              <1>     %endmacro
+    28                              <1> %macro  Block   0
+    29                              <1>     push   bx
+    30                              <1>     write   len_block,  block
+    31                              <1>     pop bx
+    32                              <1>     %endmacro
+    33                              <1> %macro  call2to10   1
+    34                              <1>     mov ax, WORD %1
+    35                              <1>     push    dx
+    36                              <1>     mov dx, 16
+    37                              <1>     call    f2to10
+    38                              <1>     pop dx
+    39                              <1>     %endmacro
+    40                              <1> %macro  CRLF    0
+    41                              <1>     push    ebx
+    42                              <1>     mov	edx,	len_crlf
+    43                              <1>     mov	ecx,	crlf
+    44                              <1>     mov	ebx,	1
+    45                              <1>     mov	eax,	4
+    46                              <1>     int	0x80
+    47                              <1>     pop ebx
+    48                              <1>     %endmacro
+    49                              <1> %macro  write_pbx   2
+    50                              <1>     push    ebx
+    51                              <1>     mov	edx,	%1 ;length of string
+    52                              <1>     mov	ecx,	%2 ;address of string
+    53                              <1>     mov	ebx,	1
+    54                              <1>     mov	eax,	4
+    55                              <1>     int	0x80	
+    56                              <1>     pop ebx
+    57                              <1>     %endmacro
+    58                              <1> %macro  read_pbx    2
+    59                              <1>     push    ebx
+    60                              <1>     mov	edx,	%1 ;length of string
+    61                              <1>     mov	ecx,	%2 ;address of string
+    62                              <1> 	mov	ebx,	0
+    63                              <1> 	mov	eax,	3
+    64                              <1> 	int	0x80
+    65                              <1> 	pop    ebx
+    66                              <1> 	%endmacro 
+    13                                  
+    14                                  ;global define
+    15                                  global  f10t2
+    16                                  global  ch_status
+    17                                  
+    18                                  extern  f2to10
+    19                                  extern  good_name
+    20                                  extern  len_good_name
+    21                                  extern  count
+    22                                  extern  len_count
+    23                                  extern  in_price
+    24                                  extern  len_in_price
+    25                                  extern  out_price
+    26                                  extern  len_out_price
+    27                                  extern  in_num
+    28                                  extern  len_in_num
+    29                                  extern  out_num
+    30                                  extern  len_out_num
+    31                                  extern  grand
+    32                                  extern  len_grand
+    33                                  extern  crlf
+    34                                  extern  len_crlf
+    35                                  extern  auth
+    36                                  ;data segment
+    37                                  section .data   
+    38 00000000 0A00                    dat dw  0AH
+    39 00000002 00                      sign    db  0
+    40 00000003 00<rept>                in_db   times   5   db  0
+    41 00000008 0000<rept>              in_dw   times   5   dw  0
+    42 00000012 0000                    result  dw  0
+    43 00000014 7E3E                    foward  db  "~>"
+    44                                  len_foward  equ $-foward
+    45 00000016 6368616E676520656E-     changeend   db  "change end"
+    45 0000001F 64                 
+    46                                  len_changeend   equ $-changeend
+    47 00000020 676F6F643A6E6F6E65      good_none   db  "good:none"
+    48                                  len_good_none   equ $-good_none
+    49 00000029 5065726D697373696F-     not_boss    db  "Permission denied"
+    49 00000032 6E2064656E696564   
+    50                                  len_not_boss    equ $-not_boss
+    51                                  ;code segment
+    52                                  section .text
+    53                                  ;test
+    54                                  ;global  _start
+    55                                  ;_start:
+    56                                  ;    read    2,  in_dw
+    57                                  ;    mov si, in_dw
+    58                                  ;    mov cx, 2
+    59                                  ;    call    f10t2
+    60                                  ;    mov [result],   ax
+    61                                  ;exit:
+    62                                  ;	mov	ebx,	0
+    63                                  ;	mov	eax,	1
+    64                                  ;	int	0x80    
+    65                                  
+    66                                  ch_status:
+    67 00000000 50                          push    eax
+    68 00000001 51                          push    ecx
+    69 00000002 52                          push    edx
+    70 00000003 6656                        push    si
+    71                                      ;check have good
+    72 00000005 6683FB00                    cmp bx, 0
+    73 00000009 751E                        jne check_boss
+    74                                      write_pbx   len_good_none,  good_none
+    74 0000000B 53                  <1>  push ebx
+    74 0000000C BA09000000          <1>  mov edx, %1
+    74 00000011 B9[20000000]        <1>  mov ecx, %2
+    74 00000016 BB01000000          <1>  mov ebx, 1
+    74 0000001B B804000000          <1>  mov eax, 4
+    74 00000020 CD80                <1>  int 0x80
+    74 00000022 5B                  <1>  pop ebx
+    75 00000023 665E                        pop    si
+    76 00000025 5A                          pop    edx
+    77 00000026 59                          pop    ecx
+    78 00000027 58                          pop    eax
+    79 00000028 C3                          ret
+    80                                  ;check is boss
+    81                                  check_boss:
+    82 00000029 803D[00000000]01            cmp BYTE [auth],    1
+    83 00000030 741E                        je  change_body
+    84                                      write_pbx   len_not_boss,   not_boss
+    84 00000032 53                  <1>  push ebx
+    84 00000033 BA11000000          <1>  mov edx, %1
+    84 00000038 B9[29000000]        <1>  mov ecx, %2
+    84 0000003D BB01000000          <1>  mov ebx, 1
+    84 00000042 B804000000          <1>  mov eax, 4
+    84 00000047 CD80                <1>  int 0x80
+    84 00000049 5B                  <1>  pop ebx
+    85 0000004A 665E                        pop    si
+    86 0000004C 5A                          pop    edx
+    87 0000004D 59                          pop    ecx
+    88 0000004E 58                          pop    eax
+    89 0000004F C3                          ret
+    90                                      
+    91                                  change_body:
+    92 00000050 53                          push    ebx
+    93                                      write_16   10, [ds:bx]
+    93 00000051 66BA0A00            <1>  mov dx, %1
+    93 00000055 3E66678B0F          <1>  mov cx, %2
+    93 0000005A BB01000000          <1>  mov ebx, 1
+    93 0000005F B804000000          <1>  mov eax, 4
+    93 00000064 CD80                <1>  int 0x80
+    94 00000066 5B                          pop ebx
+    95                                      
+    96                                      ;count
+    97                                      write_pbx   len_count,  count
+    97 00000067 53                  <1>  push ebx
+    97 00000068 BA[00000000]        <1>  mov edx, %1
+    97 0000006D B9[00000000]        <1>  mov ecx, %2
+    97 00000072 BB01000000          <1>  mov ebx, 1
+    97 00000077 B804000000          <1>  mov eax, 4
+    97 0000007C CD80                <1>  int 0x80
+    97 0000007E 5B                  <1>  pop ebx
+    98                                      ;printf +10
+    99 0000007F 3E678A470A                  mov al, BYTE [ds:bx+10]
+   100 00000084 B400                        mov ah, 0
+   101 00000086 6652                        push    dx
+   102 00000088 66BA1000                    mov dx, 16
+   103 0000008C E8(00000000)                call    f2to10
+   104 00000091 665A                        pop dx
+   105                                      
+   106                                      write_pbx   len_foward, foward
+   106 00000093 53                  <1>  push ebx
+   106 00000094 BA02000000          <1>  mov edx, %1
+   106 00000099 B9[14000000]        <1>  mov ecx, %2
+   106 0000009E BB01000000          <1>  mov ebx, 1
+   106 000000A3 B804000000          <1>  mov eax, 4
+   106 000000A8 CD80                <1>  int 0x80
+   106 000000AA 5B                  <1>  pop ebx
+   107                                      
+   108                                      ;change
+   109                                      read_pbx    5,  in_db
+   109 000000AB 53                  <1>  push ebx
+   109 000000AC BA05000000          <1>  mov edx, %1
+   109 000000B1 B9[03000000]        <1>  mov ecx, %2
+   109 000000B6 BB00000000          <1>  mov ebx, 0
+   109 000000BB B803000000          <1>  mov eax, 3
+   109 000000C0 CD80                <1>  int 0x80
+   109 000000C2 5B                  <1>  pop ebx
+   110 000000C3 66BE[0300]                  mov si, in_db
+   111 000000C7 66B90500                    mov cx, 5
+   112 000000CB 66B80000                    mov ax, 0
+   113 000000CF E879010000                  call    f10t2
+   114 000000D4 3E6788470A                  mov BYTE [ds:bx+10],    al
+   115                                      
+   116                                      ;in_price
+   117                                      write_pbx   len_in_price,   in_price
+   117 000000D9 53                  <1>  push ebx
+   117 000000DA BA[00000000]        <1>  mov edx, %1
+   117 000000DF B9[00000000]        <1>  mov ecx, %2
+   117 000000E4 BB01000000          <1>  mov ebx, 1
+   117 000000E9 B804000000          <1>  mov eax, 4
+   117 000000EE CD80                <1>  int 0x80
+   117 000000F0 5B                  <1>  pop ebx
+   118                                      ;printf +11
+   119 000000F1 3E66678B470B                mov ax, WORD [ds:bx+11]
+   120 000000F7 6652                        push    dx
+   121 000000F9 66BA1000                    mov dx, 16
+   122 000000FD E8(00000000)                call    f2to10
+   123 00000102 665A                        pop dx
+   124                                      
+   125                                      write_pbx   len_foward, foward
+   125 00000104 53                  <1>  push ebx
+   125 00000105 BA02000000          <1>  mov edx, %1
+   125 0000010A B9[14000000]        <1>  mov ecx, %2
+   125 0000010F BB01000000          <1>  mov ebx, 1
+   125 00000114 B804000000          <1>  mov eax, 4
+   125 00000119 CD80                <1>  int 0x80
+   125 0000011B 5B                  <1>  pop ebx
+   126                                      
+   127                                      ;change
+   128                                      read_pbx    5,  in_dw
+   128 0000011C 53                  <1>  push ebx
+   128 0000011D BA05000000          <1>  mov edx, %1
+   128 00000122 B9[08000000]        <1>  mov ecx, %2
+   128 00000127 BB00000000          <1>  mov ebx, 0
+   128 0000012C B803000000          <1>  mov eax, 3
+   128 00000131 CD80                <1>  int 0x80
+   128 00000133 5B                  <1>  pop ebx
+   129 00000134 66BE[0800]                  mov si, in_dw
+   130 00000138 66B90500                    mov cx, 5
+   131 0000013C 66B80000                    mov ax, 0
+   132 00000140 E808010000                  call    f10t2
+   133 00000145 3E666789470B                mov WORD [ds:bx+11],    ax
+   134                                  
+   135                                      ;out_price
+   136                                      write_pbx   len_out_price,   out_price
+   136 0000014B 53                  <1>  push ebx
+   136 0000014C BA[00000000]        <1>  mov edx, %1
+   136 00000151 B9[00000000]        <1>  mov ecx, %2
+   136 00000156 BB01000000          <1>  mov ebx, 1
+   136 0000015B B804000000          <1>  mov eax, 4
+   136 00000160 CD80                <1>  int 0x80
+   136 00000162 5B                  <1>  pop ebx
+   137                                      ;printf +13
+   138 00000163 3E66678B470D                mov ax, WORD [ds:bx+13]
+   139 00000169 6652                        push    dx
+   140 0000016B 66BA1000                    mov dx, 16
+   141 0000016F E8(00000000)                call    f2to10
+   142 00000174 665A                        pop dx
+   143                                      
+   144                                      write_pbx   len_foward, foward
+   144 00000176 53                  <1>  push ebx
+   144 00000177 BA02000000          <1>  mov edx, %1
+   144 0000017C B9[14000000]        <1>  mov ecx, %2
+   144 00000181 BB01000000          <1>  mov ebx, 1
+   144 00000186 B804000000          <1>  mov eax, 4
+   144 0000018B CD80                <1>  int 0x80
+   144 0000018D 5B                  <1>  pop ebx
+   145                                      
+   146                                      ;change
+   147                                      read_pbx    5,  in_dw
+   147 0000018E 53                  <1>  push ebx
+   147 0000018F BA05000000          <1>  mov edx, %1
+   147 00000194 B9[08000000]        <1>  mov ecx, %2
+   147 00000199 BB00000000          <1>  mov ebx, 0
+   147 0000019E B803000000          <1>  mov eax, 3
+   147 000001A3 CD80                <1>  int 0x80
+   147 000001A5 5B                  <1>  pop ebx
+   148 000001A6 66BE[0800]                  mov si, in_dw
+   149 000001AA 66B90500                    mov cx, 5
+   150 000001AE 66B80000                    mov ax, 0
+   151 000001B2 E896000000                  call    f10t2
+   152 000001B7 3E666789470D                mov WORD [ds:bx+13],    ax
+   153                                  
+   154                                      
+   155                                      ;in_num
+   156                                      write_pbx   len_in_num,   in_num
+   156 000001BD 53                  <1>  push ebx
+   156 000001BE BA[00000000]        <1>  mov edx, %1
+   156 000001C3 B9[00000000]        <1>  mov ecx, %2
+   156 000001C8 BB01000000          <1>  mov ebx, 1
+   156 000001CD B804000000          <1>  mov eax, 4
+   156 000001D2 CD80                <1>  int 0x80
+   156 000001D4 5B                  <1>  pop ebx
+   157                                      ;printf +15
+   158 000001D5 3E66678B470F                mov ax, WORD [ds:bx+15]
+   159 000001DB 6652                        push    dx
+   160 000001DD 66BA1000                    mov dx, 16
+   161 000001E1 E8(00000000)                call    f2to10
+   162 000001E6 665A                        pop dx
+   163                                      
+   164                                      write_pbx   len_foward, foward
+   164 000001E8 53                  <1>  push ebx
+   164 000001E9 BA02000000          <1>  mov edx, %1
+   164 000001EE B9[14000000]        <1>  mov ecx, %2
+   164 000001F3 BB01000000          <1>  mov ebx, 1
+   164 000001F8 B804000000          <1>  mov eax, 4
+   164 000001FD CD80                <1>  int 0x80
+   164 000001FF 5B                  <1>  pop ebx
+   165                                      
+   166                                      ;change
+   167                                      read_pbx    5,  in_dw
+   167 00000200 53                  <1>  push ebx
+   167 00000201 BA05000000          <1>  mov edx, %1
+   167 00000206 B9[08000000]        <1>  mov ecx, %2
+   167 0000020B BB00000000          <1>  mov ebx, 0
+   167 00000210 B803000000          <1>  mov eax, 3
+   167 00000215 CD80                <1>  int 0x80
+   167 00000217 5B                  <1>  pop ebx
+   168 00000218 66BE[0800]                  mov si, in_dw
+   169 0000021C 66B90500                    mov cx, 5
+   170 00000220 66B80000                    mov ax, 0
+   171 00000224 E824000000                  call    f10t2
+   172 00000229 3E666789470F                mov WORD [ds:bx+15],    ax
+   173                                      
+   174                                      write_pbx   len_changeend,  changeend
+   174 0000022F 53                  <1>  push ebx
+   174 00000230 BA0A000000          <1>  mov edx, %1
+   174 00000235 B9[16000000]        <1>  mov ecx, %2
+   174 0000023A BB01000000          <1>  mov ebx, 1
+   174 0000023F B804000000          <1>  mov eax, 4
+   174 00000244 CD80                <1>  int 0x80
+   174 00000246 5B                  <1>  pop ebx
+   175                                      
+   176 00000247 665E                        pop    si
+   177 00000249 5A                          pop    edx
+   178 0000024A 59                          pop    ecx
+   179 0000024B 58                          pop    eax
+   180 0000024C C3                          ret
+   181                                      
+   182                                  f10t2:
+   183 0000024D 6652                    	push dx
+   184 0000024F 6653                    	push bx
+   185 00000251 66B80000                	mov ax,0
+   186 00000255 C605[02000000]00        	mov BYTE [sign],0
+   187 0000025C 678A1C                  	mov bl,BYTE [si]
+   188 0000025F 80FB2B                  	cmp bl,'+'
+   189 00000262 740C                    	jz  a
+   190 00000264 80FB2D                  	cmp bl,'-'
+   191 00000267 7510                    	jne next2
+   192 00000269 C605[02000000]01        	mov BYTE [sign],1
+   193                                  a:
+   194 00000270 6649                    	dec cx
+   195 00000272 7437                    	jz err
+   196                                  next1:
+   197 00000274 6646                    	inc si
+   198 00000276 678A1C                  	mov bl,BYTE [si]
+   199                                  next2:
+   200 00000279 80FB30                  	cmp bl,'0'
+   201 0000027C 722D                    	jb err
+   202 0000027E 80FB39                  	cmp bl,'9'
+   203 00000281 7728                    	ja err
+   204 00000283 80EB30                  	sub bl,30h
+   205 00000286 B700                    	mov bh,0
+   206 00000288 66F725[00000000]        	mul WORD [dat]
+   207 0000028F 701A                    	jo err
+   208 00000291 6601D8                  	add ax,bx
+   209 00000294 7215                    	jc err
+   210                                  	
+   211 00000296 6649                    	dec cx
+   212 00000298 75DA                    	jnz next1
+   213 0000029A 803D[02000000]01        	cmp BYTE [sign],1
+   214 000002A1 7503                    	jne qq
+   215 000002A3 66F7D8                  	neg ax
+   216                                  
+   217                                  qq:
+   218 000002A6 665B                    	pop bx
+   219 000002A8 665A                    	pop dx
+   220 000002AA C3                      	ret
+   221                                  err:
+   222 000002AB 66BEFFFF                	mov si,-1
+   223 000002AF EBF5                    	jmp qq
+   224                                  
+   225                                  
+   226                                  
+   227                                  
+   228                                  
+   229                                  
