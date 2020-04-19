@@ -1,0 +1,27 @@
+WRITE MACRO A
+	LEA DX,A
+	MOV AH,9
+	INT 21H
+	ENDM
+
+READ MACRO A
+	LEA DX,A
+	MOV AH,10
+	INT 21H
+	ENDM
+
+disable_keyboard macro  
+    push    ax
+    in al, 21h
+	or al, 02h
+	out    21h,    al
+	pop    ax
+	endm
+	
+enable_keyboard macro
+    push    ax
+    in al,  21h
+    and al, 253
+    out 21h,    al
+    pop ax
+    endm

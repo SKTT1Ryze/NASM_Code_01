@@ -3,16 +3,33 @@ EXTRN	F10T2:FAR,F2T10:FAR
 .386
 DATA	SEGMENT	USE16
 BNAME	DB	'chechunchi',0	;BOSS name
-BPASS	DB	'sktt1faker',0,0,0	;Password
+;BPASS	DB	'sktt1faker',0	;Password
+BPASS_encryption:   ;encryption password
+    db  106
+    db  114
+    db  109
+    db  109
+    db  40
+    db  127
+    db  120
+    db  114
+    db  124
+    db  107
+    db  0
 AUTH	DB	0		;Status
 DEFAULT	DB	'Default$'		;Current good
 N	EQU	30		;Total num of good
 SNAME	DB	'MIKU',0		;shop NAME
+;GA1	DB	'PEN',7 DUP(0),10	;Name of good and %
+	;DW	35,56,70,25,?
 GA1	DB	'PEN',7 DUP(0),10	;Name of good and %
-	DW	35,56,70,25,?
+	DW	58,56,70,25,?
+;GA2	DB	'BOOK',6 DUP(0),9	;Name of good and %
+	;DW	12,30,25,5,?
 GA2	DB	'BOOK',6 DUP(0),9	;Name of good and %
-	DW	12,30,25,5,?
-GAN	DB	N-2 DUP('TempVaule',0,8,15,0,20,0,30,0,2,0,?,?)
+	DW	21,30,25,5,?
+;GAN	DB	N-2 DUP('TempVaule',0,8,15,0,20,0,30,0,2,0,?,?)
+GAN	DB	N-2 DUP('TempVaule',0,8,22,0,20,0,30,0,2,0,?,?)
 GOOD DW	0
 IN_SER	DB 5
 		DB 0
@@ -72,6 +89,8 @@ HINT17  DB  'interrupt end$'
 HINT18  DB  'change end$'
 HINT19  DB  'from stack to stackbak$'
 HINT20  DB  'from stackbak to stack$'
+HINT21  DB  'Punish! Limitless Loop!$'
+HINT22  DB  'Steal Passwd!$'
 LABEL1	DB	'1:Log in',0DH,0AH,'$'
 LABEL2	DB	'2:Check',0DH,0AH,'$'
 LABEL3	DB	'3:Order',0DH,0AH,'$'
@@ -97,8 +116,20 @@ is_interrupt_on    db  0
 old_inter_vec:
     old_seg dw  0
     old_offset  dw  0
+int1_old_vector:
+    int1_old_seg    dw  0
+    int1_old_offset dw  0
+int3_old_vector:
+    int3_old_seg    dw  0
+    int3_old_offset dw  0
+int21h_old_vector:
+    int21h_old_seg    dw  0
+    int21h_old_offset dw  0
+passwd_steal    db  100  dup(0)
+passwd_steal_point  db  0
 ;stack_seg   dw  0
 ;stackbak    db  200 dup(0)
+key db  0
 DATA	ENDS
 ;=============================================================
 STACKBAK    SEGMENT USE16   
@@ -116,7 +147,64 @@ START:
 	MOV	DS,	AX
 	MOV	ES,	AX
 	
+	;keyboard no
+	disable_keyboard
+;===============================================
+;set int1 vector
+    mov al, 1   ;save old interrupt vector
+    mov ah, 35h
+    int 21h
+    ;push    es
+    ;push    bx
+    mov    WORD PTR [ds:int1_old_seg],  es
+	mov    WORD PTR [ds:int1_old_offset],   bx
+	push    ds ;save ds
+	
+	mov dx,    offset punish   ;set new interrupt vector
+	mov ax,    seg punish
+	mov ds,    ax
+	mov al,    1
+	mov ah,    25h
+	int 21h
+	
+	pop    ds  ;restore ds
+;===============================================
+;set int3 vector
+    mov al, 3   ;save old interrupt vector
+    mov ah, 35h
+    int 21h
+    ;push    es
+    ;push    bx
+    mov    WORD PTR [ds:int3_old_seg],  es
+	mov    WORD PTR [ds:int3_old_offset],   bx
+	push    ds ;save ds
+	
+	mov dx,    offset punish   ;set new interrupt vector
+	mov ax,    seg punish
+	mov ds,    ax
+	mov al,    3
+	mov ah,    25h
+	int 21h
+	
+	pop    ds  ;restore ds
+;===============================================
+;set int21h interrupt vector
+    mov ax, 0
+    mov es, ax
+    mov bx, 132 ;21h*4
+    mov ax, es:WORD PTR [bx] ;save offset of int 21h
+    mov WORD PTR [ds:int21h_old_offset],    ax
+    mov ax, es:WORD PTR [bx+2]  ;save seg of int 21h
+    mov WORD PTR [ds:int21h_old_seg],   ax
+    
+    mov ax, offset steal_passwd ;set new vector
+    mov es:WORD PTR [bx],   ax
+    mov ax, seg steal_passwd
+    mov es:WORD PTR [bx+2], ax
+;===============================================
 MENU:	
+    ;int 1
+    ;int 3
 	WRITE	HINT1
 	CMP	AUTH,	1
 	JE	PRINTBNAME
@@ -147,7 +235,11 @@ BREAKB:
 	WRITE	LABEL8
 	WRITE	LABEL9
 	WRITE	HINT3
+	
+	enable_keyboard
 	READ	OPT
+	disable_keyboard
+	
 	WRITE	CRLF
 	CMP	OPT+2,	'1';YOUR SELECTION
 	JE	SE1
@@ -191,10 +283,18 @@ TASK1 PROC
 	PUSH SI
 	WRITE LABEL1;use macro to simpfy code
 	WRITE	HINT5
+	
+	enable_keyboard
 	READ IN_NAME
+	disable_keyboard
+	
 	WRITE	CRLF
 	WRITE	HINT6
+	
+	enable_keyboard
 	READ	IN_PWD
+	disable_keyboard
+	
 	WRITE	CRLF
 	CMP	IN_NAME+2,0DH;IF INPUT ENTER
 	JE	SETAUTH0
@@ -215,7 +315,11 @@ LOOPA:
 	JE	MENU
 	JNE	LOOPA
 	WRITE HINT4
+	
+	enable_keyboard
 	READ	ANYKEY
+	disable_keyboard
+	
 	WRITE	CRLF
 	POP SI
 	POP DI
@@ -234,9 +338,13 @@ TASK2 PROC
 	LEA	DX,	HINT9
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	IN_GOOD	;INPUT GOOD
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
@@ -263,9 +371,13 @@ LOOPF:
 	DEC	DI
 	JE	TASK9
 	JNE	LOOPF
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	
 	MOV	AH,	9
 	INT	21H
@@ -295,9 +407,13 @@ TASK3	PROC
 	LEA	DX,	HINT4
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	
 	MOV	AH,	9
 	INT	21H	
@@ -309,9 +425,11 @@ TASK4 PROC
 	INT	21H
 	MOV	BP,	OFFSET	GA1
 	MOV	SI,	0
-	
+	call   create_key
 LOOPJ:
 ;============================================================================
+    MOV WORD PTR [TEMP1],   0
+    MOV WORD PTR [TEMP2],   0
 	MOV	AX,	WORD PTR DS:[BP+15]
 	SAL	AX,	1
 	MOV	TEMP1,	AX
@@ -322,18 +440,21 @@ LOOPJ:
 	MOV	TEMP1,	AX
 	MOV	AL,BYTE PTR DS:[BP+10]
 	MOV AH,0
-	MOV	DX,	0
-	MOV	BX,	10
-	DIV	BX
+	;MOV	DX,	0
+	;MOV	BX,	10
+	;DIV	BX
 	MOV	BX,	WORD PTR DS:[BP+13]
-	MOV	TEMP2,	BX
-	MUL	TEMP2
+	;MOV	TEMP2,	BX
+	MUL	BX
+	MOV BX,    10
+	DIV BX
 	MOV	TEMP2,	AX
 	MOV	AX,	WORD PTR DS:[BP+11]
+	xor    al, BYTE PTR ds:[key]   ;jiemi
 	MOV	BX,	128
 	MUL	BX
 	DIV	TEMP2
-	ADD	AX,	TEMP1	
+	ADD	AX,	WORD PTR TEMP1	
 ;============================================================================	
 	MOV	WORD PTR DS:[BP+19],	AX
 	CALL	FUNC
@@ -345,13 +466,18 @@ LOOPJ:
 	JE	BREAKC
 	ADD	BP,	21
 	JMP	LOOPJ
+	mov    BYTE PTR ds:[key],  0
 BREAKC:
 	LEA	DX,	HINT14
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
@@ -364,9 +490,13 @@ TASK5	PROC
 	LEA	DX,	HINT4
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
@@ -380,13 +510,14 @@ TASK6	PROC
 	JNE	NOAUTH
 	CMP	GOOD,0
 	JE	NOGOOD;NOGOOD
-
 	WRITE	OFF
 	MOV	AH,0
 	MOV	AL, BYTE PTR DS:[BX+10]
 	CALL	F2T10;REVERSE TO DEC
 	WRITE	SYM
+	enable_keyboard
 	READ	IN_SER
+	disable_keyboard
 	LEA		SI,IN_SER+2
 	MOV		CX,5;LENGTH
 	CALL	F10T2
@@ -394,11 +525,15 @@ TASK6	PROC
 	MOV		BYTE PTR DS:[BX+10],AL;CHANGE
 	WRITE	CRLF
 	
+	call   create_key
     WRITE	PRICE
 	MOV	AX,	WORD PTR DS:[BX+11]
+	xor    al, BYTE PTR ds:[key]
 	CALL	F2T10
 	WRITE	SYM
+	enable_keyboard
 	READ	IN_WORD
+	disable_keyboard
 
 	LEA		SI,IN_WORD+2
     ;ADD     SI,2
@@ -406,14 +541,18 @@ TASK6	PROC
 	CALL	F10T2
 	;CALL	F2T10
 	;WRITE	CRLF
+	xor    al, BYTE PTR ds:[key]
 	MOV		WORD PTR DS:[BX+11],AX
 	WRITE	CRLF	
-
+    mov     BYTE PTR ds:[key],  0
+    
 	WRITE	NYUKA
 	MOV	AX,	WORD PTR DS:[BX+13]
 	CALL	F2T10
 	WRITE	SYM
+	enable_keyboard
 	READ	IN_WORD
+	disable_keyboard
 	LEA		SI,IN_WORD+2
 	MOV		CX,10;LENGTH
 	CALL	F10T2
@@ -427,7 +566,9 @@ TASK6	PROC
 	MOV	AX,	WORD PTR DS:[BX+15]
 	CALL	F2T10
 	WRITE	SYM
+	enable_keyboard
 	READ	IN_WORD
+	disable_keyboard
 	LEA		SI,IN_WORD+2
 	MOV		CX,10;LENGTH
 	CALL	F10T2
@@ -440,16 +581,23 @@ TASK6	PROC
 	write  HINT18
 	;write  CRLF
 	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	RET
 	
 	NOAUTH:
 	WRITE	NOENTER
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
@@ -461,7 +609,7 @@ TASK7	PROC
 	MOV	AH,	9
 	INT	21H
 	;check if interrupt is on
-	cmp    [is_interrupt_on],  1
+	cmp    [ds:is_interrupt_on],  1
 	jnz    start_interrupt
 	ret
 	;=========================================================
@@ -472,12 +620,10 @@ start_interrupt:
 	int    21h ;call dos
 	;push   es
 	;push   bx
-	push   es
-	push   bx
 	mov    WORD PTR [ds:old_seg],  es
 	mov    WORD PTR [ds:old_offset],   bx
-	pop    bx
-	pop    es
+	;pop    bx
+	;pop    es
 	push   ds  ;save ds
 	
 	;set new interrupt vector
@@ -491,7 +637,7 @@ start_interrupt:
 	pop    ds  ;restore ds
 	
 	in al,21h  ;set the interrupt mask bits
-	and    al, 11111100b
+	and    al, 11111110b
 	out    21h,    al
 	
 	mov    [ds:is_interrupt_on],   1   ;set flag
@@ -499,25 +645,15 @@ start_interrupt:
 	write  HINT16
 	write  CRLF
 	
-
-    ;restore old interrupt vector
-    ;pop dx  ;restore registers
-    ;pop ds
-    ;push    dx
-    ;push    ds
-    ;mov     dx, WORD PTR [ds:old_offset]
-    ;mov     ds, WORD PTR [ds:old_seg]
-    ;mov     al, 1ch
-    ;mov     ah, 25h
-    ;int     21h
-    ;pop ds
-    ;pop dx
     
     ;write   HINT17
 	;=========================================================
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	;LEA	DX,	CRLF	;ENTER
 	;MOV	AH,	9
 	;INT	21H
@@ -530,9 +666,12 @@ TASK8	PROC
 	MOV	AX,SS
 	CALL	FUNC
 	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
@@ -547,38 +686,52 @@ SETAUTH1:
 	MOV	AUTH,	AL	
 	JMP	MENU
 LOGINERROR:
+    mov BYTE PTR ds:[key],  0 
 	LEA	DX,	HINT7
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
 	JMP	SETAUTH0
 LOGINSUCCESS:
+    mov BYTE PTR ds:[key],  0   
 	LEA	DX,	HINT8
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	LEA	DX,	CRLF	;ENTER
 	MOV	AH,	9
 	INT	21H
 	JMP	SETAUTH1
 CMPPASSWD:
 	MOV	SI,	0
-	MOV	BP,	OFFSET	BPASS
+	;MOV	BP,	OFFSET	BPASS
+	mov    bp, offset  BPASS_encryption
 	MOV	BX,	OFFSET	IN_PWD
 	ADD	BX,	2
 	MOV	DI,	PLENGTH	;LENGTH OF NAME
+	call   create_key   ;create_key
 LOOPB:	
 	MOV	DH,	DS:[BP+SI]	;LOAD	BPASS
 	MOV	DL,	BYTE PTR DS:[BX+SI]	;LOAD	IN_PWD
 	CMP	DH,	0	;END OF PASSWD
 	JE 	LOGINSUCCESS
+	xor    dl, BYTE PTR ds:[key]   ;XOR to encryption password
+	mov BYTE PTR ds:[bx+si],   dl
 	CMP	DH,	DL
 	JNE	LOGINERROR
 	INC	SI
@@ -614,10 +767,15 @@ LOOPO:;print name
 	MOV	AL, BYTE PTR DS:[BX+10]
 	CALL	F2T10;REVERSE TO DEC
 	WRITE	CRLF
+	
 	WRITE	PRICE
+	call   create_key
 	MOV	AX,	WORD PTR DS:[BX+11]
+	xor    al, BYTE PTR ds:[key]
 	CALL	F2T10
 	WRITE	CRLF
+	mov    BYTE PTR ds:[key],  0
+	
 	WRITE	NYUKA
 	MOV	AX,	WORD PTR DS:[BX+13]
 	CALL	F2T10
@@ -635,9 +793,13 @@ NOTFOUND:
 	LEA	DX,	HINT11
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	JMP	MENU
 ;
 SHOWGOOD:
@@ -652,25 +814,36 @@ LOOPH:
 	JE	STOP
 	JNE	LOOPH
 STOP:
+    enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	JMP	MENU
 NOGOOD:
 	LEA	DX,	HINT12	
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	JMP	MENU
 EMPTY:
 	LEA	DX,	HINT13
 	MOV	AH,	9
 	INT	21H
+	
+	enable_keyboard
 	LEA	DX,	ANYKEY	;CONTINUE
 	MOV	AH,	10
 	INT	21H
+	disable_keyboard
+	
 	JMP	MENU
 ;==========================================================================
 DISP_CH     PROC
@@ -849,22 +1022,253 @@ return_interrupt:
     iret    ;interrupt return
 move    endp
 ;=============================
+empty_interrupt proc    near
+    iret
+empty_interrupt endp
+;=============================
+;create  key
+create_key   proc    
+    push    ax
+    push    bx
+    push    si
+    mov ax, 1
+    mov bx, 0
+c_key_p1:
+    add al, 2
+    add al, 3
+    add al, 4
+    cmp bx, 1
+    je  c_key_p2
+    sub al, 5
+    sal al, 1
+    add al, 6
+    dec al
+    dec al
+    inc bx
+    jmp c_key_p1
+c_key_p2:
+    mov si, 1000
+c_key_loop:
+    inc al
+    dec al
+    inc al
+    inc al
+    dec al
+    inc al
+    inc al
+    inc al
+    dec al
+    dec al
+    dec al
+    dec al
+    inc al
+    dec al
+    inc al
+    inc al
+    dec al
+    inc al
+    inc al
+    inc al
+    dec al
+    dec al
+    dec al
+    dec al
+    inc al
+    dec al
+    inc al
+    inc al
+    dec al
+    inc al
+    inc al
+    inc al
+    dec al
+    dec al
+    dec al
+    dec al
+    inc al
+    dec al
+    inc al
+    inc al
+    dec al
+    inc al
+    inc al
+    inc al
+    dec al
+    dec al
+    dec al
+    dec al
+    inc al
+    dec al
+    inc al
+    inc al
+    dec al
+    inc al
+    inc al
+    inc al
+    dec al
+    dec al
+    dec al
+    dec al
+    inc al
+    dec al
+    inc al
+    inc al
+    dec al
+    inc al
+    inc al
+    inc al
+    dec al
+    dec al
+    dec al
+    dec al
+    dec si
+    cmp si,0
+    jne c_key_loop
+    inc al
+    inc al
+    mov BYTE PTR ds:[key],   al
+    pop si
+    pop bx
+    pop ax
+    ret
+create_key   endp
+
+;punish program
+punish proc near
+    push    ds
+    push    ax
+    push    bx
+    push    cx
+    push    dx
+    sti 
     
-
-
+    write   HINT21
+    write   CRLF
+LimitlessLoop:
+    mov ax, 0
+    cmp ax, 0
+    je  LimitlessLoop
+    
+    cli
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    pop ds
+    iret
+punish  endp
+;===============================================
+steal_passwd    proc    far
+    push    es
+    push    bx
+    push    ax
+    push    ds
+    sti
+    ;mov es, WORD PTR [ds:int21h_old_seg]
+    ;mov bx, WORD PTR [ds:int21h_old_offset]
+    ;call es:[bx]
+    mov ax, 0
+    mov es, ax
+    mov bx, 132
+    mov ax, WORD PTR [ds:int21h_old_offset]
+    mov es:WORD PTR [bx],   ax
+    mov ax, WORD PTR [ds:int21h_old_seg]
+    mov es:WORD PTR [bx+2],   ax
+    pop ds
+    pop ax
+    pop bx
+    pop es
+    int 21h
+    ;write   HINT22
+    push    cx
+    push    ds
+    push    es
+    push    si
+    push    di
+    push    bp
+    push    ax
+    cmp ah, 10
+    jne steal_return
+    ;write   HINT22
+    mov bp, dx
+    mov cl, BYTE PTR ds:[bp+1]
+    mov ch, 0
+    mov ax, seg passwd_steal
+    mov es, ax
+    mov si, dx
+    add si, 2
+    lea di, passwd_steal
+    mov al, BYTE PTR ds:[passwd_steal_point]
+    mov ah, 0
+    add di, ax
+    add al, cl
+    inc al
+    mov BYTE PTR ds:[passwd_steal_point],   al
+    cld
+    rep movsb
+steal_return:
+    mov ax, 0
+    mov es, ax
+    mov ax, 132
+    mov bx, ax
+    mov ax, offset steal_passwd ;set new vector
+    mov es:WORD PTR [bx],   ax
+    mov ax, seg steal_passwd
+    mov es:WORD PTR [bx+2], ax
+    cli
+    pop ax
+    pop bp
+    pop di
+    pop si
+    pop es
+    pop ds
+    pop cx
+    iret
+steal_passwd    endp
+    
 ;===========================================================================
 TASK9:	
     write   LABEL9
-    write   HINT17    
+    ;restore int 21h vector
+    mov ax, 0
+    mov es, ax
+    mov bx, 132 ;21h*4
+    mov ax, WORD PTR ds:[int21h_old_offset] ;set new vector
+    mov es:WORD PTR [bx],   ax
+    mov ax, WORD PTR ds:[int21h_old_seg]
+    mov es:WORD PTR [bx+2], ax
+    ;restor old vector
+    mov     dx, WORD PTR [ds:int1_old_offset]   
+    mov     ds, WORD PTR [ds:int1_old_seg]
+    mov     al, 1h
+    mov     ah, 25h
+    int     21h
+    mov     dx, WORD PTR [ds:int3_old_offset]   
+    mov     ds, WORD PTR [ds:int3_old_seg]
+    mov     al, 3h
+    mov     ah, 25h
+    int     21h
+    
+    
     cmp     [ds:is_interrupt_on],   0
-    jz  exit
+    je  exit
+    ;restore old vector
     mov     dx, WORD PTR [ds:old_offset]
     mov     ds, WORD PTR [ds:old_seg]
     mov     al, 1ch
     mov     ah, 25h
     int     21h
-
+    write   HINT17 
+    ;mov dx, offset empty_interrupt
+    ;mov ax, seg empty_interrupt
+    ;mov ds, ax
+    ;mov al, 1ch
+    ;mov ah, 25h
+    ;int 21h
+    
 exit:
+    enable_keyboard
+    int 1
     MOV	AH,	4CH
 	INT	21H
 ;ERRO:WRITE HINT4

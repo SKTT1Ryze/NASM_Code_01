@@ -1,5 +1,5 @@
 ;本模块完成功能：将有符号十进制转换为字类型的二进制数。
-	PUBLIC F10T2
+PUBLIC F10T2
 .386
 ;子程序 F10T2
 ;功能：有符号十进制转换为字类型的二进制数（16位段）。
@@ -14,7 +14,7 @@ DATA ENDS
 CODE SEGMENT USE16 PARA PUBLIC 'CODE'
 	ASSUME CS:CODE,DS:DATA
 F10T2 PROC FAR
-	PUSH DX
+	PUSH DX    
 	PUSH BX
 	MOV AX,0
 	MOV SIGN,0

@@ -1,0 +1,1373 @@
+Microsoft (R) Macro Assembler Version 6.00     		    04/18/20 23:33:38
+SHOP.ASM						     Page 1 - 1
+
+
+				INCLUDE	MYLIB.LIB
+			      C WRITE MACRO A
+			      C 	LEA DX,A
+			      C 	MOV AH,9
+			      C 	INT 21H
+			      C 	ENDM
+			      C 
+			      C READ MACRO A
+			      C 	LEA DX,A
+			      C 	MOV AH,10
+			      C 	INT 21H
+			      C 	ENDM
+			      C 
+			      C 
+				EXTRN	F10T2:FAR,F2T10:FAR
+				.386
+ 0000				DATA	SEGMENT	USE16
+ 0000 63 68 65 63 68 75		BNAME	DB	'chechunchi',0	;BOSS name
+       6E 63 68 69 00
+ 000B 73 6B 74 74 31 66		BPASS	DB	'sktt1faker',0	;Password
+       61 6B 65 72 00
+ 0016				BPASS_encryption:
+ 0016  6A			    db  106
+ 0017  72			    db  114
+ 0018  6D			    db  109
+ 0019  6D			    db  109
+ 001A  28			    db  40
+ 001B  7F			    db  127
+ 001C  78			    db  120
+ 001D  72			    db  114
+ 001E  7C			    db  124
+ 001F  6B			    db  107
+ 0020  00			    db  0
+ 0021 00			AUTH	DB	0		;Status
+ 0022 44 65 66 61 75 6C		DEFAULT	DB	'Default$'		;Current good
+       74 24
+ = 001E				N	EQU	30		;Total num of good
+ 002A 4D 49 4B 55 00		SNAME	DB	'MIKU',0		;shop NAME
+ 002F 50 45 4E			GA1	DB	'PEN',7 DUP(0),10	;Name of good and %
+       0007 [
+        00
+       ] 0A
+ 003A  0023 0038 0046			DW	35,56,70,25,?
+       0019 0000
+ 0044 42 4F 4F 4B		GA2	DB	'BOOK',6 DUP(0),9	;Name of good and %
+       0006 [
+        00
+       ] 09
+ 004F  000C 001E 0019			DW	12,30,25,5,?
+       0005 0000
+ 0059  001C [			GAN	DB	N-2 DUP('TempVaule',0,8,15,0,20,0,30,0,2,0,?,?)
+        54 65 6D 70 56 61
+        75 6C 65 00 08 0F
+        00 14 00 1E 00 02
+        00 00 00
+       ]
+ 02A5 0000			GOOD DW	0
+ 02A7 05			IN_SER	DB 5
+ 02A8  00					DB 0
+ 02A9  0005 [					DB 5 DUP(0)
+        00
+       ]
+						;DB    "$"
+ 02AE 0A			IN_WORD	DB 10 
+ 02AF  00					DB 0
+ 02B0  000A [					DB 10 DUP(0)
+        00
+       ]
+						;DB    "$"
+ 02BA 0A			OPT	DB	10
+ 02BB  00				DB	?
+ 02BC  000A [				DB	10 DUP(0)
+        00
+       ]
+ 02C6 0A			ANYKEY	DB	10
+ 02C7  00				DB	?
+ 02C8  000A [				DB	10 DUP(0)
+        00
+       ]
+ 02D2 14			IN_NAME	DB	20
+ 02D3  00				DB	?
+ 02D4  0014 [				DB	20 DUP(0)
+        00
+       ]
+ 02E8 14			IN_PWD	DB	20
+ 02E9  00				DB	?
+ 02EA  0014 [				DB	20 DUP(0)
+        00
+       ]
+ 02FE 14			IN_GOOD	DB	20
+ 02FF  00				DB	?
+ 0300  0014 [				DB	20 DUP(0)
+        00
+       ]
+ 0314 0000			TEMP1	DW	0
+ 0316 0000			TEMP2	DW	0
+ 0318 2D 3E 24			SYM		DB	'->$'
+ 031B 63 68 65 63 68 75		BOSS	DB	'chechunchi$'
+       6E 63 68 69 24
+ 0326 43 55 53 54 4F 4D		CUSTOMER	DB	'CUSTOMER$'
+       45 52 24
+ 032F 4F 46 46 3A 24		OFF		DB	'OFF:$'
+ 0334 50 52 49 43 45 3A		PRICE	DB	'PRICE:$'
+       24
+ 033B 54 4F 54 41 4C 20		NYUKA	DB	'TOTAL INSHOP:$'
+       49 4E 53 48 4F 50
+       3A 24
+ 0349 41 4D 4F 55 4E 54		SOLD	DB	'AMOUNT OF SOLD:$'
+       20 4F 46 20 53 4F
+       4C 44 3A 24
+ 0359 52 45 43 4D 45 4E		RECM	DB	'RECMEND:$'
+       44 3A 24
+ = 0014				NLENGTH	EQU	20
+ = 0014				PLENGTH	EQU	20
+ = 000A				GLENGTH	EQU	10
+ 0362 0D 0A 24			CRLF	DB	0DH,0AH,'$';enter
+ 0365 09 24			BLANK	DB	'	$'
+ 0367 55 53 45 52 3A 24		HINT1	DB	'USER:$'	
+ 036D 47 4F 4F 44 3A 24		HINT2	DB	'GOOD:$'
+ 0373 50 6C 65 61 73 65		HINT3	DB	'Please input number FROM 1~9:$'
+       20 69 6E 70 75 74
+       20 6E 75 6D 62 65
+       72 20 46 52 4F 4D
+       20 31 7E 39 3A 24
+ 0391 45 6E 74 65 72 20		HINT4	DB	'Enter any key to continue...$'
+       61 6E 79 20 6B 65
+       79 20 74 6F 20 63
+       6F 6E 74 69 6E 75
+       65 2E 2E 2E 24
+ 03AE 55 73 65 72 6E 61		HINT5	DB	'Username:$'
+       6D 65 3A 24
+ 03B8 50 61 73 73 77 6F		HINT6	DB	'Password:$'
+       72 64 3A 24
+ 03C2 4C 6F 67 69 6E 20		HINT7	DB	'Login error$'
+       65 72 72 6F 72 24
+ 03CE 4C 6F 67 69 6E 20		HINT8	DB	'Login success$'
+       73 75 63 63 65 73
+       73 24
+ 03DC 4E 61 6D 65 20 6F		HINT9	DB	'Name of goods:$'
+       66 20 67 6F 6F 64
+       73 3A 24
+ 03EB 46 4F 55 4E 44 0D		HINT10	DB	'FOUND',0DH,0AH,'$'
+       0A 24
+ 03F3 4E 4F 54 20 46 4F		HINT11	DB	'NOT FOUND$'
+       55 4E 44 24
+ 03FD 44 4F 20 4E 4F 54		HINT12	DB	'DO NOT SELECT GOOD$'
+       20 53 45 4C 45 43
+       54 20 47 4F 4F 44
+       24
+ 0410 47 4F 4F 44 20 49		HINT13	DB	'GOOD IS EMPTY$'
+       53 20 45 4D 50 54
+       59 24
+ 041E 43 4F 4D 50 4C 45		HINT14	DB	'COMPLETE$'
+       54 45 24
+ 0427 63 68 61 6E 67 65		HINT15  DB  'change environment$'
+       20 65 6E 76 69 72
+       6F 6E 6D 65 6E 74
+       24
+ 043A 69 6E 74 65 72 72		HINT16  DB  'interrupt on$'
+       75 70 74 20 6F 6E
+       24
+ 0447 69 6E 74 65 72 72		HINT17  DB  'interrupt end$'
+       75 70 74 20 65 6E
+       64 24
+ 0455 63 68 61 6E 67 65		HINT18  DB  'change end$'
+       20 65 6E 64 24
+ 0460 66 72 6F 6D 20 73		HINT19  DB  'from stack to stackbak$'
+       74 61 63 6B 20 74
+       6F 20 73 74 61 63
+       6B 62 61 6B 24
+ 0477 66 72 6F 6D 20 73		HINT20  DB  'from stackbak to stack$'
+       74 61 63 6B 62 61
+       6B 20 74 6F 20 73
+       74 61 63 6B 24
+ 048E 31 3A 4C 6F 67 20		LABEL1	DB	'1:Log in',0DH,0AH,'$'
+       69 6E 0D 0A 24
+ 0499 32 3A 43 68 65 63		LABEL2	DB	'2:Check',0DH,0AH,'$'
+       6B 0D 0A 24
+ 04A3 33 3A 4F 72 64 65		LABEL3	DB	'3:Order',0DH,0AH,'$'
+       72 0D 0A 24
+ 04AD 34 3A 43 61 6C 63		LABEL4	DB	'4:Calculate recomend',0DH,0AH,'$'
+       75 6C 61 74 65 20
+       72 65 63 6F 6D 65
+       6E 64 0D 0A 24
+ 04C4 35 3A 52 61 6E 6B		LABEL5	DB	'5:Ranking',0DH,0AH,'$'
+       69 6E 67 0D 0A 24
+ 04D0 36 3A 43 68 61 6E		LABEL6	DB	'6:Change',0DH,0AH,'$'
+       67 65 0D 0A 24
+ 04DB 37 3A 4D 6F 76 65		LABEL7	DB	'7:Move',0DH,0AH,'$'	
+       0D 0A 24
+ 04E4 38 3A 41 64 64 72		LABEL8	DB	'8:Address',0DH,0AH,'$'
+       65 73 73 0D 0A 24
+ 04F0 39 3A 51 75 69 74		LABEL9	DB	'9:Quit',0DH,0AH,'$'
+       0D 0A 24
+ 04F9 4E 4F 20 41 55 54		NOENTER	DB	'NO AUTHUROTY TO WRITE',0DH,0AH,'$'
+       48 55 52 4F 54 59
+       20 54 4F 20 57 52
+       49 54 45 0D 0A 24
+ 0511 00			change_direction    db  0   
+ 0512				change_time:
+ 0512 01			    ch_second   db  01h
+ 0513 01			    ch_minute   db  01h
+ 0514				pre_time:
+ 0514 00			    pre_second  db  0
+ 0515 00			    pre_minute  db  0
+ 0516				current_time:
+ 0516 00			    cur_second  db  0
+ 0517 00			    cur_minute  db  0
+ 0518 00			sub_time    db  0
+ 0519 00			is_interrupt_on    db  0
+ 051A				old_inter_vec:
+ 051A 0000			    old_seg dw  0
+ 051C 0000			    old_offset  dw  0
+				;stack_seg   dw  0
+				;stackbak    db  200 dup(0)
+ 051E 19			key db  25
+ 051F				DATA	ENDS
+				;=============================================================
+ 0000				STACKBAK    SEGMENT USE16   
+ 0000  00C8 [			stack_b DB  200 DUP(0)
+        00
+       ]
+ 00C8				STACKBAK    ENDS
+				;=============================================================
+ 0000				STACK	SEGMENT	USE16	STACK
+ 0000  00C8 [			stack_a DB	200	DUP(0)
+        00
+       ]
+ 00C8				STACK	ENDS
+				;==============================================================
+ 0000				CODE	SEGMENT	USE16
+					ASSUME	DS:DATA,	SS:STACK,	CS:CODE
+ 0000				START:	
+ 0000  B8 ---- R			MOV	AX,	DATA
+ 0003  8E D8				MOV	DS,	AX
+ 0005  8E C0				MOV	ES,	AX
+					
+ 0007				MENU:	
+					WRITE	HINT1
+ 0007  BA 0367 R	     1		LEA DX,HINT1
+ 000A  B4 09		     1		MOV AH,9
+ 000C  CD 21		     1		INT 21H
+ 000E  80 3E 0021 R 01			CMP	AUTH,	1
+ 0013  0F 84 04AA			JE	PRINTBNAME
+ 0017  0F 85 04B0			JNE	PRINTCUSTOMER
+ 001B				BREAKA:
+					WRITE	CRLF
+ 001B  BA 0362 R	     1		LEA DX,CRLF
+ 001E  B4 09		     1		MOV AH,9
+ 0020  CD 21		     1		INT 21H
+					WRITE	HINT2
+ 0022  BA 036D R	     1		LEA DX,HINT2
+ 0025  B4 09		     1		MOV AH,9
+ 0027  CD 21		     1		INT 21H
+ 0029  83 3E 02A5 R 00			CMP	GOOD,0
+ 002E  74 13				JE	BREAKB
+ 0030  BE 0000				MOV	SI,	0
+ 0033  8B 1E 02A5 R			MOV	BX,	GOOD
+ 0037				LOOPI:
+ 0037  8A 10				MOV	DL,	BYTE PTR DS:[BX+SI]
+ 0039  B4 02				MOV AH,	2
+ 003B  CD 21				INT	21H
+ 003D  46				INC	SI
+ 003E  83 FE 0A				CMP	SI,	10
+ 0041  75 F4				JNE	LOOPI
+ 0043				BREAKB:	
+					WRITE	CRLF;USE MACRO TO SIMPFY CODE
+ 0043  BA 0362 R	     1		LEA DX,CRLF
+ 0046  B4 09		     1		MOV AH,9
+ 0048  CD 21		     1		INT 21H
+					WRITE	LABEL1
+ 004A  BA 048E R	     1		LEA DX,LABEL1
+ 004D  B4 09		     1		MOV AH,9
+ 004F  CD 21		     1		INT 21H
+					WRITE	LABEL2
+ 0051  BA 0499 R	     1		LEA DX,LABEL2
+ 0054  B4 09		     1		MOV AH,9
+ 0056  CD 21		     1		INT 21H
+					WRITE	LABEL3
+ 0058  BA 04A3 R	     1		LEA DX,LABEL3
+ 005B  B4 09		     1		MOV AH,9
+ 005D  CD 21		     1		INT 21H
+					WRITE	LABEL4
+ 005F  BA 04AD R	     1		LEA DX,LABEL4
+ 0062  B4 09		     1		MOV AH,9
+ 0064  CD 21		     1		INT 21H
+					WRITE	LABEL5
+ 0066  BA 04C4 R	     1		LEA DX,LABEL5
+ 0069  B4 09		     1		MOV AH,9
+ 006B  CD 21		     1		INT 21H
+					WRITE	LABEL6
+ 006D  BA 04D0 R	     1		LEA DX,LABEL6
+ 0070  B4 09		     1		MOV AH,9
+ 0072  CD 21		     1		INT 21H
+					WRITE	LABEL7
+ 0074  BA 04DB R	     1		LEA DX,LABEL7
+ 0077  B4 09		     1		MOV AH,9
+ 0079  CD 21		     1		INT 21H
+					WRITE	LABEL8
+ 007B  BA 04E4 R	     1		LEA DX,LABEL8
+ 007E  B4 09		     1		MOV AH,9
+ 0080  CD 21		     1		INT 21H
+					WRITE	LABEL9
+ 0082  BA 04F0 R	     1		LEA DX,LABEL9
+ 0085  B4 09		     1		MOV AH,9
+ 0087  CD 21		     1		INT 21H
+					WRITE	HINT3
+ 0089  BA 0373 R	     1		LEA DX,HINT3
+ 008C  B4 09		     1		MOV AH,9
+ 008E  CD 21		     1		INT 21H
+					READ	OPT
+ 0090  BA 02BA R	     1		LEA DX,OPT
+ 0093  B4 0A		     1		MOV AH,10
+ 0095  CD 21		     1		INT 21H
+					WRITE	CRLF
+ 0097  BA 0362 R	     1		LEA DX,CRLF
+ 009A  B4 09		     1		MOV AH,9
+ 009C  CD 21		     1		INT 21H
+ 009E  80 3E 02BC R 31			CMP	OPT+2,	'1';YOUR SELECTION
+ 00A3  74 3A				JE	SE1
+ 00A5  80 3E 02BC R 32			CMP	OPT+2,	'2'
+ 00AA  74 39				JE	SE2
+ 00AC  80 3E 02BC R 33			CMP	OPT+2,	'3'
+ 00B1  74 38				JE	SE3
+ 00B3  80 3E 02BC R 34			CMP	OPT+2,	'4'
+ 00B8  74 37				JE	SE4
+ 00BA  80 3E 02BC R 35			CMP	OPT+2,	'5'
+ 00BF  74 36				JE	SE5
+ 00C1  80 3E 02BC R 36			CMP	OPT+2,	'6'
+ 00C6  74 35				JE	SE6
+ 00C8  80 3E 02BC R 37			CMP	OPT+2,	'7'
+ 00CD  74 34				JE	SE7
+ 00CF  80 3E 02BC R 38			CMP	OPT+2,	'8'
+ 00D4  74 33				JE	SE8
+ 00D6  80 3E 02BC R 39			CMP	OPT+2,	'9'
+ 00DB  0F 84 05D7			JE	TASK9
+ 00DF  E8 002D				SE1:CALL	TASK1
+ 00E2  E9 FF22				JMP	MENU
+ 00E5  E8 00A8				SE2:CALL	TASK2
+ 00E8  E9 FF1C				JMP	MENU
+ 00EB  E8 0110				SE3:CALL	TASK3
+ 00EE  E9 FF16				JMP	MENU
+ 00F1  E8 014B				SE4:CALL	TASK4
+ 00F4  E9 FF10				JMP	MENU
+ 00F7  E8 01CD				SE5:CALL	TASK5
+ 00FA  E9 FF0A				JMP	MENU
+ 00FD  E8 01E4				SE6:CALL	TASK6
+ 0100  E9 FF04				JMP	MENU
+ 0103  E8 02E6				SE7:CALL	TASK7
+ 0106  E9 FEFE				JMP	MENU
+ 0109  E8 0333				SE8:CALL	TASK8
+ 010C  E9 FEF8				JMP	MENU
+				;==============================================================
+ 010F				TASK1 PROC
+ 010F  50				PUSH AX
+ 0110  52				PUSH DX
+ 0111  57				PUSH DI
+ 0112  56				PUSH SI
+					WRITE LABEL1;use macro to simpfy code
+ 0113  BA 048E R	     1		LEA DX,LABEL1
+ 0116  B4 09		     1		MOV AH,9
+ 0118  CD 21		     1		INT 21H
+					WRITE	HINT5
+ 011A  BA 03AE R	     1		LEA DX,HINT5
+ 011D  B4 09		     1		MOV AH,9
+ 011F  CD 21		     1		INT 21H
+					READ IN_NAME
+ 0121  BA 02D2 R	     1		LEA DX,IN_NAME
+ 0124  B4 0A		     1		MOV AH,10
+ 0126  CD 21		     1		INT 21H
+					WRITE	CRLF
+ 0128  BA 0362 R	     1		LEA DX,CRLF
+ 012B  B4 09		     1		MOV AH,9
+ 012D  CD 21		     1		INT 21H
+					WRITE	HINT6
+ 012F  BA 03B8 R	     1		LEA DX,HINT6
+ 0132  B4 09		     1		MOV AH,9
+ 0134  CD 21		     1		INT 21H
+					READ	IN_PWD
+ 0136  BA 02E8 R	     1		LEA DX,IN_PWD
+ 0139  B4 0A		     1		MOV AH,10
+ 013B  CD 21		     1		INT 21H
+					WRITE	CRLF
+ 013D  BA 0362 R	     1		LEA DX,CRLF
+ 0140  B4 09		     1		MOV AH,9
+ 0142  CD 21		     1		INT 21H
+ 0144  80 3E 02D4 R 0D			CMP	IN_NAME+2,0DH;IF INPUT ENTER
+ 0149  0F 84 030D			JE	SETAUTH0
+ 014D  BE 0000				MOV	SI,	0
+ 0150  BD 0000 R			MOV	BP,	OFFSET	BNAME
+ 0153  BB 02D2 R			MOV	BX,	OFFSET	IN_NAME
+ 0156  83 C3 02				ADD	BX,	2
+ 0159  BF 0014				MOV	DI,	NLENGTH	;LENGTH OF NAME
+ 015C				LOOPA:	
+ 015C  3E: 8A 32			MOV	DH,	DS:[BP+SI]	;LOAD	BNAME
+ 015F  8A 10				MOV	DL,	BYTE PTR DS:[BX+SI]	;LOAD	IN_NAME
+ 0161  80 FE 00				CMP	DH,	0	;END OF NAME
+ 0164  0F 84 0330			JE 	CMPPASSWD
+ 0168  3A F2				CMP	DH,	DL
+ 016A  0F 85 02FC			JNE	LOGINERROR
+ 016E  46				INC	SI
+ 016F  4F				DEC	DI
+ 0170  0F 84 FE93			JE	MENU
+ 0174  75 E6				JNE	LOOPA
+					WRITE HINT4
+ 0176  BA 0391 R	     1		LEA DX,HINT4
+ 0179  B4 09		     1		MOV AH,9
+ 017B  CD 21		     1		INT 21H
+					READ	ANYKEY
+ 017D  BA 02C6 R	     1		LEA DX,ANYKEY
+ 0180  B4 0A		     1		MOV AH,10
+ 0182  CD 21		     1		INT 21H
+					WRITE	CRLF
+ 0184  BA 0362 R	     1		LEA DX,CRLF
+ 0187  B4 09		     1		MOV AH,9
+ 0189  CD 21		     1		INT 21H
+ 018B  5E				POP SI
+ 018C  5F				POP DI
+ 018D  5A				POP DX
+ 018E  5A				POP DX
+ 018F  C3				RET
+ 0190					TASK1 ENDP
+ 0190				TASK2 PROC
+ 0190  50				PUSH AX
+ 0191  52				PUSH DX
+ 0192  57				PUSH DI
+ 0193  56				PUSH SI
+ 0194  55				PUSH BP
+ 0195  53				PUSH BX
+					WRITE LABEL2
+ 0196  BA 0499 R	     1		LEA DX,LABEL2
+ 0199  B4 09		     1		MOV AH,9
+ 019B  CD 21		     1		INT 21H
+ 019D  BA 03DC R			LEA	DX,	HINT9
+ 01A0  B4 09				MOV	AH,	9
+ 01A2  CD 21				INT	21H
+ 01A4  BA 02FE R			LEA	DX,	IN_GOOD	;INPUT GOOD
+ 01A7  B4 0A				MOV	AH,	10
+ 01A9  CD 21				INT	21H
+ 01AB  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 01AE  B4 09				MOV	AH,	9
+ 01B0  CD 21				INT	21H
+ 01B2  BD 002F R			MOV	BP,	OFFSET	GA1
+ 01B5  BB 02FE R			MOV	BX,	OFFSET	IN_GOOD
+ 01B8  83 ED 15				SUB	BP,	21
+ 01BB  83 C3 02				ADD	BX,	2
+ 01BE  B0 00				MOV AL,	0
+ 01C0				LOOPC:
+ 01C0  FE C0				INC	AL
+ 01C2  3C 1F				CMP AL,	N+1
+ 01C4  0F 84 03AB			JE	NOTFOUND
+ 01C8  83 C5 15				ADD	BP,	21
+ 01CB  BE 0000				MOV	SI,	0
+ 01CE  BF 000A				MOV DI,	GLENGTH	;LENGTH OF GOOD NAME
+ 01D1				LOOPF:
+ 01D1  3E: 8A 32			MOV	DH,	DS:[BP+SI]	;LOAD GOOD NAME
+ 01D4  8A 10				MOV	DL,	BYTE PTR DS:[BX+SI]	;LOAD IN_GOOD NAME
+ 01D6  80 FE 00				CMP	DH,	0	;END OF NAME
+ 01D9  0F 84 02F8			JE	FOUND
+ 01DD  3A F2				CMP	DH,	DL
+ 01DF  75 DF				JNE	LOOPC
+ 01E1  46				INC	SI
+ 01E2  4F				DEC	DI
+ 01E3  0F 84 04CF			JE	TASK9
+ 01E7  75 E8				JNE	LOOPF
+ 01E9  BA 02C6 R			LEA	DX,	ANYKEY	
+ 01EC  B4 0A				MOV	AH,	10
+ 01EE  CD 21				INT	21H
+ 01F0  BA 0362 R			LEA	DX,	CRLF	
+ 01F3  B4 09				MOV	AH,	9
+ 01F5  CD 21				INT	21H
+ 01F7  5B				POP BX
+ 01F8  5D				POP BP
+ 01F9  5E				POP SI
+ 01FA  5F				POP DI
+ 01FB  5A				POP DX
+ 01FC  58				POP AX
+ 01FD  C3				RET
+ 01FE					TASK2 ENDP
+ 01FE				TASK3	PROC
+ 01FE  BA 04A3 R			LEA	DX,	LABEL3
+ 0201  B4 09				MOV	AH,	9
+ 0203  CD 21				INT	21H
+ 0205  83 3E 02A5 R 00			CMP	GOOD,	0
+ 020A  0F 84 038E			JE	NOGOOD
+ 020E  8B 36 02A5 R			MOV	SI,	GOOD
+ 0212  8A 44 11				MOV	AL,	17[SI]
+ 0215  8A 64 12				MOV	AH,	18[SI]
+ 0218  3B 44 0F				CMP	AX,	WORD PTR 15[SI]
+ 021B  0F 84 038E			JE	EMPTY
+ 021F  04 01				ADD	AL,	1
+ 0221  80 D4 00				ADC	AH,	0
+ 0224  89 44 11				MOV	WORD PTR 17[SI],	AX	
+ 0227  EB 16				JMP	TASK4
+ 0229  BA 0391 R			LEA	DX,	HINT4
+ 022C  B4 09				MOV	AH,	9
+ 022E  CD 21				INT	21H
+ 0230  BA 02C6 R			LEA	DX,	ANYKEY	
+ 0233  B4 0A				MOV	AH,	10
+ 0235  CD 21				INT	21H
+ 0237  BA 0362 R			LEA	DX,	CRLF	
+ 023A  B4 09				MOV	AH,	9
+ 023C  CD 21				INT	21H	
+ 023E  C3				RET
+ 023F					TASK3	ENDP
+ 023F				TASK4 PROC
+ 023F  BA 04AD R			LEA	DX,	LABEL4
+ 0242  B4 09				MOV	AH,	9
+ 0244  CD 21				INT	21H
+ 0246  BD 002F R			MOV	BP,	OFFSET	GA1
+ 0249  BE 0000				MOV	SI,	0
+					
+ 024C				LOOPJ:
+				;============================================================================
+ 024C  C7 06 0314 R 0000	    MOV WORD PTR [TEMP1],   0
+ 0252  C7 06 0316 R 0000	    MOV WORD PTR [TEMP2],   0
+ 0258  3E: 8B 46 0F			MOV	AX,	WORD PTR DS:[BP+15]
+ 025C  D1 E0				SAL	AX,	1
+ 025E  A3 0314 R			MOV	TEMP1,	AX
+ 0261  3E: 8B 46 11			MOV	AX,	WORD PTR DS:[BP+17]
+ 0265  BB 0080				MOV	BX,	128
+ 0268  F7 E3				MUL	BX
+ 026A  F7 36 0314 R			DIV	TEMP1
+ 026E  A3 0314 R			MOV	TEMP1,	AX
+ 0271  3E: 8A 46 0A			MOV	AL,BYTE PTR DS:[BP+10]
+ 0275  B4 00				MOV AH,0
+					;MOV	DX,	0
+					;MOV	BX,	10
+					;DIV	BX
+ 0277  3E: 8B 5E 0D			MOV	BX,	WORD PTR DS:[BP+13]
+					;MOV	TEMP2,	BX
+ 027B  F7 E3				MUL	BX
+ 027D  BB 000A				MOV BX,    10
+ 0280  F7 F3				DIV BX
+ 0282  A3 0316 R			MOV	TEMP2,	AX
+ 0285  3E: 8B 46 0B			MOV	AX,	WORD PTR DS:[BP+11]
+ 0289  BB 0080				MOV	BX,	128
+ 028C  F7 E3				MUL	BX
+ 028E  F7 36 0316 R			DIV	TEMP2
+ 0292  03 06 0314 R			ADD	AX,	WORD PTR TEMP1	
+				;============================================================================	
+ 0296  3E: 89 46 13			MOV	WORD PTR DS:[BP+19],	AX
+ 029A  E8 032C				CALL	FUNC
+ 029D  BA 0365 R			LEA	DX,	BLANK
+ 02A0  B4 09				MOV	AH,	9
+ 02A2  CD 21				INT	21H
+ 02A4  83 C6 01				ADD	SI,	1
+ 02A7  83 FE 1E				CMP	SI,	N
+ 02AA  74 05				JE	BREAKC
+ 02AC  83 C5 15				ADD	BP,	21
+ 02AF  EB 9B				JMP	LOOPJ
+ 02B1				BREAKC:
+ 02B1  BA 041E R			LEA	DX,	HINT14
+ 02B4  B4 09				MOV	AH,	9
+ 02B6  CD 21				INT	21H
+ 02B8  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 02BB  B4 0A				MOV	AH,	10
+ 02BD  CD 21				INT	21H
+ 02BF  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 02C2  B4 09				MOV	AH,	9
+ 02C4  CD 21				INT	21H
+ 02C6  C3				RET
+ 02C7					TASK4 ENDP
+ 02C7				TASK5	PROC
+ 02C7  BA 04C4 R			LEA	DX,	LABEL5
+ 02CA  B4 09				MOV	AH,	9
+ 02CC  CD 21				INT	21H
+ 02CE  BA 0391 R			LEA	DX,	HINT4
+ 02D1  B4 09				MOV	AH,	9
+ 02D3  CD 21				INT	21H
+ 02D5  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 02D8  B4 0A				MOV	AH,	10
+ 02DA  CD 21				INT	21H
+ 02DC  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 02DF  B4 09				MOV	AH,	9
+ 02E1  CD 21				INT	21H
+ 02E3  C3				RET
+ 02E4				TASK5	ENDP
+ 02E4				TASK6	PROC
+ 02E4  BA 04D0 R			LEA	DX,	LABEL6
+ 02E7  B4 09				MOV	AH,	9
+ 02E9  CD 21				INT	21H
+ 02EB  80 3E 0021 R 01			CMP	AUTH,1;WHETHER YOU ARE THE BOSS
+ 02F0  0F 85 00E2			JNE	NOAUTH
+ 02F4  83 3E 02A5 R 00			CMP	GOOD,0
+ 02F9  0F 84 029F			JE	NOGOOD;NOGOOD
+
+					WRITE	OFF
+ 02FD  BA 032F R	     1		LEA DX,OFF
+ 0300  B4 09		     1		MOV AH,9
+ 0302  CD 21		     1		INT 21H
+ 0304  B4 00				MOV	AH,0
+ 0306  8A 47 0A				MOV	AL, BYTE PTR DS:[BX+10]
+ 0309  9A ---- 0000 E			CALL	F2T10;REVERSE TO DEC
+					WRITE	SYM
+ 030E  BA 0318 R	     1		LEA DX,SYM
+ 0311  B4 09		     1		MOV AH,9
+ 0313  CD 21		     1		INT 21H
+					READ	IN_SER
+ 0315  BA 02A7 R	     1		LEA DX,IN_SER
+ 0318  B4 0A		     1		MOV AH,10
+ 031A  CD 21		     1		INT 21H
+ 031C  BE 02A9 R			LEA		SI,IN_SER+2
+ 031F  B9 0005				MOV		CX,5;LENGTH
+ 0322  9A ---- 0000 E			CALL	F10T2
+					
+ 0327  88 47 0A				MOV		BYTE PTR DS:[BX+10],AL;CHANGE
+					WRITE	CRLF
+ 032A  BA 0362 R	     1		LEA DX,CRLF
+ 032D  B4 09		     1		MOV AH,9
+ 032F  CD 21		     1		INT 21H
+					
+				    WRITE	PRICE
+ 0331  BA 0334 R	     1		LEA DX,PRICE
+ 0334  B4 09		     1		MOV AH,9
+ 0336  CD 21		     1		INT 21H
+ 0338  8B 47 0B				MOV	AX,	WORD PTR DS:[BX+11]
+ 033B  9A ---- 0000 E			CALL	F2T10
+					WRITE	SYM
+ 0340  BA 0318 R	     1		LEA DX,SYM
+ 0343  B4 09		     1		MOV AH,9
+ 0345  CD 21		     1		INT 21H
+					READ	IN_WORD
+ 0347  BA 02AE R	     1		LEA DX,IN_WORD
+ 034A  B4 0A		     1		MOV AH,10
+ 034C  CD 21		     1		INT 21H
+
+ 034E  BE 02B0 R			LEA		SI,IN_WORD+2
+				    ;ADD     SI,2
+ 0351  B9 000A				MOV		CX,10;LENGTH
+ 0354  9A ---- 0000 E			CALL	F10T2
+					;CALL	F2T10
+					;WRITE	CRLF
+ 0359  89 47 0B				MOV		WORD PTR DS:[BX+11],AX
+					WRITE	CRLF	
+ 035C  BA 0362 R	     1		LEA DX,CRLF
+ 035F  B4 09		     1		MOV AH,9
+ 0361  CD 21		     1		INT 21H
+
+					WRITE	NYUKA
+ 0363  BA 033B R	     1		LEA DX,NYUKA
+ 0366  B4 09		     1		MOV AH,9
+ 0368  CD 21		     1		INT 21H
+ 036A  8B 47 0D				MOV	AX,	WORD PTR DS:[BX+13]
+ 036D  9A ---- 0000 E			CALL	F2T10
+					WRITE	SYM
+ 0372  BA 0318 R	     1		LEA DX,SYM
+ 0375  B4 09		     1		MOV AH,9
+ 0377  CD 21		     1		INT 21H
+					READ	IN_WORD
+ 0379  BA 02AE R	     1		LEA DX,IN_WORD
+ 037C  B4 0A		     1		MOV AH,10
+ 037E  CD 21		     1		INT 21H
+ 0380  BE 02B0 R			LEA		SI,IN_WORD+2
+ 0383  B9 000A				MOV		CX,10;LENGTH
+ 0386  9A ---- 0000 E			CALL	F10T2
+					;WRITE	CRLF
+					;CALL	F2T10
+					;WRITE	CRLF
+ 038B  89 47 0D				MOV		WORD PTR DS:[BX+13],AX
+					WRITE	CRLF
+ 038E  BA 0362 R	     1		LEA DX,CRLF
+ 0391  B4 09		     1		MOV AH,9
+ 0393  CD 21		     1		INT 21H
+					
+					WRITE	SOLD
+ 0395  BA 0349 R	     1		LEA DX,SOLD
+ 0398  B4 09		     1		MOV AH,9
+ 039A  CD 21		     1		INT 21H
+ 039C  8B 47 0F				MOV	AX,	WORD PTR DS:[BX+15]
+ 039F  9A ---- 0000 E			CALL	F2T10
+					WRITE	SYM
+ 03A4  BA 0318 R	     1		LEA DX,SYM
+ 03A7  B4 09		     1		MOV AH,9
+ 03A9  CD 21		     1		INT 21H
+					READ	IN_WORD
+ 03AB  BA 02AE R	     1		LEA DX,IN_WORD
+ 03AE  B4 0A		     1		MOV AH,10
+ 03B0  CD 21		     1		INT 21H
+ 03B2  BE 02B0 R			LEA		SI,IN_WORD+2
+ 03B5  B9 000A				MOV		CX,10;LENGTH
+ 03B8  9A ---- 0000 E			CALL	F10T2
+					;WRITE	CRLF
+					;CALL	F2T10
+					;WRITE	CRLF
+ 03BD  89 47 0F				MOV		WORD PTR DS:[BX+15],AX
+					WRITE	CRLF
+ 03C0  BA 0362 R	     1		LEA DX,CRLF
+ 03C3  B4 09		     1		MOV AH,9
+ 03C5  CD 21		     1		INT 21H
+					
+					write  HINT18
+ 03C7  BA 0455 R	     1		LEA DX,HINT18
+ 03CA  B4 09		     1		MOV AH,9
+ 03CC  CD 21		     1		INT 21H
+					;write  CRLF
+					
+ 03CE  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 03D1  B4 0A				MOV	AH,	10
+ 03D3  CD 21				INT	21H
+ 03D5  C3				RET
+					
+ 03D6					NOAUTH:
+					WRITE	NOENTER
+ 03D6  BA 04F9 R	     1		LEA DX,NOENTER
+ 03D9  B4 09		     1		MOV AH,9
+ 03DB  CD 21		     1		INT 21H
+ 03DD  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 03E0  B4 0A				MOV	AH,	10
+ 03E2  CD 21				INT	21H
+ 03E4  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 03E7  B4 09				MOV	AH,	9
+ 03E9  CD 21				INT	21H
+ 03EB  C3				RET
+ 03EC					TASK6	ENDP
+ 03EC				TASK7	PROC
+
+ 03EC  BA 04DB R			LEA	DX,	LABEL7
+ 03EF  B4 09				MOV	AH,	9
+ 03F1  CD 21				INT	21H
+					;check if interrupt is on
+ 03F3  80 3E 0519 R 01			cmp    [is_interrupt_on],  1
+ 03F8  75 01				jnz    start_interrupt
+ 03FA  C3				ret
+					;=========================================================
+					;save old interrupt vector
+ 03FB				start_interrupt:
+ 03FB  B0 1C			    mov    al, 1ch ;al<=vector number
+ 03FD  B4 35				mov    ah, 35h ;get the interrupt vector
+ 03FF  CD 21				int    21h ;call dos
+					;push   es
+					;push   bx
+ 0401  06				push   es
+ 0402  53				push   bx
+ 0403  8C 06 051A R			mov    WORD PTR [ds:old_seg],  es
+ 0407  89 1E 051C R			mov    WORD PTR [ds:old_offset],   bx
+ 040B  5B				pop    bx
+ 040C  07				pop    es
+ 040D  1E				push   ds  ;save ds
+					
+					;set new interrupt vector
+ 040E  BA 05EB R			mov    dx, offset  move    ;dx<=offset of procedure move
+ 0411  B8 ---- R			mov    ax, seg     move    ;ax<=segment of procedure move
+ 0414  8E D8				mov    ds, ax  ;ds<=ax
+ 0416  B0 1C				mov    al, 1ch ;al<=vector#
+ 0418  B4 25				mov    ah, 25h ;to set interrupt vector
+ 041A  CD 21				int    21h ;call dos
+					
+ 041C  1F				pop    ds  ;restore ds
+					
+ 041D  E4 21				in al,21h  ;set the interrupt mask bits
+ 041F  24 FC				and    al, 11111100b
+ 0421  E6 21				out    21h,    al
+					
+ 0423  C6 06 0519 R 01			mov    [ds:is_interrupt_on],   1   ;set flag
+ 0428  FB				sti    ;open interrupt
+					write  HINT16
+ 0429  BA 043A R	     1		LEA DX,HINT16
+ 042C  B4 09		     1		MOV AH,9
+ 042E  CD 21		     1		INT 21H
+					write  CRLF
+ 0430  BA 0362 R	     1		LEA DX,CRLF
+ 0433  B4 09		     1		MOV AH,9
+ 0435  CD 21		     1		INT 21H
+					
+
+				    ;restore old interrupt vector
+				    ;pop dx  ;restore registers
+				    ;pop ds
+				    ;push    dx
+				    ;push    ds
+				    ;mov     dx, WORD PTR [ds:old_offset]
+				    ;mov     ds, WORD PTR [ds:old_seg]
+				    ;mov     al, 1ch
+				    ;mov     ah, 25h
+				    ;int     21h
+				    ;pop ds
+				    ;pop dx
+				    
+				    ;write   HINT17
+					;=========================================================
+ 0437  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 043A  B4 0A				MOV	AH,	10
+ 043C  CD 21				INT	21H
+					;LEA	DX,	CRLF	;ENTER
+					;MOV	AH,	9
+					;INT	21H
+ 043E  C3				RET
+ 043F					TASK7 ENDP
+ 043F				TASK8	PROC	
+ 043F  BA 04E4 R			LEA	DX,	LABEL8
+ 0442  B4 09				MOV	AH,	9
+ 0444  CD 21				INT	21H
+ 0446  8C D0				MOV	AX,SS
+ 0448  E8 017E				CALL	FUNC
+					
+ 044B  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 044E  B4 0A				MOV	AH,	10
+ 0450  CD 21				INT	21H
+ 0452  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 0455  B4 09				MOV	AH,	9
+ 0457  CD 21				INT	21H
+ 0459  C3				RET
+ 045A					TASK8	ENDP
+ 045A				SETAUTH0:	
+ 045A  B0 00				MOV	AL,	0	;0->AUTH
+ 045C  A2 0021 R			MOV	AUTH,	AL	
+ 045F  E9 FBA5				JMP	MENU
+ 0462				SETAUTH1:	
+ 0462  B0 01				MOV	AL,	1	;0->AUTH
+ 0464  A2 0021 R			MOV	AUTH,	AL	
+ 0467  E9 FB9D				JMP	MENU
+ 046A				LOGINERROR:
+ 046A  BA 03C2 R			LEA	DX,	HINT7
+ 046D  B4 09				MOV	AH,	9
+ 046F  CD 21				INT	21H
+ 0471  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 0474  B4 0A				MOV	AH,	10
+ 0476  CD 21				INT	21H
+ 0478  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 047B  B4 09				MOV	AH,	9
+ 047D  CD 21				INT	21H
+ 047F  EB D9				JMP	SETAUTH0
+ 0481				LOGINSUCCESS:
+ 0481  BA 03CE R			LEA	DX,	HINT8
+ 0484  B4 09				MOV	AH,	9
+ 0486  CD 21				INT	21H
+ 0488  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 048B  B4 0A				MOV	AH,	10
+ 048D  CD 21				INT	21H
+ 048F  BA 0362 R			LEA	DX,	CRLF	;ENTER
+ 0492  B4 09				MOV	AH,	9
+ 0494  CD 21				INT	21H
+ 0496  EB CA				JMP	SETAUTH1
+ 0498				CMPPASSWD:
+ 0498  BE 0000				MOV	SI,	0
+					;MOV	BP,	OFFSET	BPASS
+ 049B  BD 0016 R			mov    bp, offset  BPASS_encryption
+ 049E  BB 02E8 R			MOV	BX,	OFFSET	IN_PWD
+ 04A1  83 C3 02				ADD	BX,	2
+ 04A4  BF 0014				MOV	DI,	PLENGTH	;LENGTH OF NAME
+ 04A7				LOOPB:	
+ 04A7  3E: 8A 32			MOV	DH,	DS:[BP+SI]	;LOAD	BPASS
+ 04AA  8A 10				MOV	DL,	BYTE PTR DS:[BX+SI]	;LOAD	IN_PWD
+ 04AC  80 FE 00				CMP	DH,	0	;END OF PASSWD
+ 04AF  74 D0				JE 	LOGINSUCCESS
+ 04B1  32 16 051E R			xor    dl, BYTE PTR ds:[key]   ;XOR to encryption password
+ 04B5  3A F2				CMP	DH,	DL
+ 04B7  75 B1				JNE	LOGINERROR
+ 04B9  46				INC	SI
+ 04BA  4F				DEC	DI
+ 04BB  0F 84 FB48			JE	MENU
+ 04BF  75 E6				JNE	LOOPB
+ 04C1				PRINTBNAME:
+ 04C1  BA 031B R			LEA	DX,	BOSS
+ 04C4  B4 09				MOV	AH,	9
+ 04C6  CD 21				INT	21H
+ 04C8  E9 FB50				JMP	BREAKA
+ 04CB				PRINTCUSTOMER:
+ 04CB  BA 0326 R			LEA	DX,	CUSTOMER
+ 04CE  B4 09				MOV	AH,	9
+ 04D0  CD 21				INT	21H
+ 04D2  E9 FB46				JMP	BREAKA
+ 04D5				FOUND:
+					WRITE	HINT10
+ 04D5  BA 03EB R	     1		LEA DX,HINT10
+ 04D8  B4 09		     1		MOV AH,9
+ 04DA  CD 21		     1		INT 21H
+ 04DC  89 2E 02A5 R			MOV	GOOD,	BP
+					WRITE	HINT2
+ 04E0  BA 036D R	     1		LEA DX,HINT2
+ 04E3  B4 09		     1		MOV AH,9
+ 04E5  CD 21		     1		INT 21H
+ 04E7  BE 0000				MOV	SI,	0
+ 04EA  8B 1E 02A5 R			MOV	BX,	GOOD
+ 04EE				LOOPO:;print name
+ 04EE  8A 10				MOV	DL,	BYTE PTR DS:[BX+SI]
+ 04F0  B4 02				MOV AH,	2
+ 04F2  CD 21				INT	21H
+ 04F4  46				INC	SI
+ 04F5  83 FE 0A				CMP	SI,	10
+ 04F8  75 F4				JNE	LOOPO
+					WRITE	CRLF
+ 04FA  BA 0362 R	     1		LEA DX,CRLF
+ 04FD  B4 09		     1		MOV AH,9
+ 04FF  CD 21		     1		INT 21H
+					WRITE	OFF
+ 0501  BA 032F R	     1		LEA DX,OFF
+ 0504  B4 09		     1		MOV AH,9
+ 0506  CD 21		     1		INT 21H
+ 0508  B4 00				MOV	AH,0
+ 050A  8A 47 0A				MOV	AL, BYTE PTR DS:[BX+10]
+ 050D  9A ---- 0000 E			CALL	F2T10;REVERSE TO DEC
+					WRITE	CRLF
+ 0512  BA 0362 R	     1		LEA DX,CRLF
+ 0515  B4 09		     1		MOV AH,9
+ 0517  CD 21		     1		INT 21H
+					WRITE	PRICE
+ 0519  BA 0334 R	     1		LEA DX,PRICE
+ 051C  B4 09		     1		MOV AH,9
+ 051E  CD 21		     1		INT 21H
+ 0520  8B 47 0B				MOV	AX,	WORD PTR DS:[BX+11]
+ 0523  9A ---- 0000 E			CALL	F2T10
+					WRITE	CRLF
+ 0528  BA 0362 R	     1		LEA DX,CRLF
+ 052B  B4 09		     1		MOV AH,9
+ 052D  CD 21		     1		INT 21H
+					WRITE	NYUKA
+ 052F  BA 033B R	     1		LEA DX,NYUKA
+ 0532  B4 09		     1		MOV AH,9
+ 0534  CD 21		     1		INT 21H
+ 0536  8B 47 0D				MOV	AX,	WORD PTR DS:[BX+13]
+ 0539  9A ---- 0000 E			CALL	F2T10
+					WRITE	CRLF
+ 053E  BA 0362 R	     1		LEA DX,CRLF
+ 0541  B4 09		     1		MOV AH,9
+ 0543  CD 21		     1		INT 21H
+					WRITE	SOLD
+ 0545  BA 0349 R	     1		LEA DX,SOLD
+ 0548  B4 09		     1		MOV AH,9
+ 054A  CD 21		     1		INT 21H
+ 054C  8B 47 0F				MOV	AX,	WORD PTR DS:[BX+15]
+ 054F  9A ---- 0000 E			CALL	F2T10
+					WRITE	CRLF
+ 0554  BA 0362 R	     1		LEA DX,CRLF
+ 0557  B4 09		     1		MOV AH,9
+ 0559  CD 21		     1		INT 21H
+					WRITE	RECM
+ 055B  BA 0359 R	     1		LEA DX,RECM
+ 055E  B4 09		     1		MOV AH,9
+ 0560  CD 21		     1		INT 21H
+ 0562  8B 47 11				MOV	AX,	WORD PTR DS:[BX+17]
+ 0565  9A ---- 0000 E			CALL	F2T10
+					WRITE	CRLF
+ 056A  BA 0362 R	     1		LEA DX,CRLF
+ 056D  B4 09		     1		MOV AH,9
+ 056F  CD 21		     1		INT 21H
+ 0571  EB 1F				JMP		STOP
+ 0573				NOTFOUND:
+ 0573  BA 03F3 R			LEA	DX,	HINT11
+ 0576  B4 09				MOV	AH,	9
+ 0578  CD 21				INT	21H
+ 057A  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 057D  B4 0A				MOV	AH,	10
+ 057F  CD 21				INT	21H
+ 0581  E9 FA83				JMP	MENU
+				;
+ 0584				SHOWGOOD:
+				;	MOV SI, 0
+				;	MOV BX,	GOOD
+ 0584				LOOPH:
+ 0584  8A 10				MOV	DL,	BYTE PTR DS:[BX+SI]
+ 0586  B4 02				MOV	AH,	2
+ 0588  CD 21				INT	21H
+ 058A  46				INC	SI
+ 058B  83 FE 15				CMP	SI,	21
+ 058E  74 02				JE	STOP
+ 0590  75 F2				JNE	LOOPH
+ 0592				STOP:
+ 0592  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 0595  B4 0A				MOV	AH,	10
+ 0597  CD 21				INT	21H
+ 0599  E9 FA6B				JMP	MENU
+ 059C				NOGOOD:
+ 059C  BA 03FD R			LEA	DX,	HINT12	
+ 059F  B4 09				MOV	AH,	9
+ 05A1  CD 21				INT	21H
+ 05A3  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 05A6  B4 0A				MOV	AH,	10
+ 05A8  CD 21				INT	21H
+ 05AA  E9 FA5A				JMP	MENU
+ 05AD				EMPTY:
+ 05AD  BA 0410 R			LEA	DX,	HINT13
+ 05B0  B4 09				MOV	AH,	9
+ 05B2  CD 21				INT	21H
+ 05B4  BA 02C6 R			LEA	DX,	ANYKEY	;CONTINUE
+ 05B7  B4 0A				MOV	AH,	10
+ 05B9  CD 21				INT	21H
+ 05BB  E9 FA49				JMP	MENU
+				;==========================================================================
+ 05BE				DISP_CH     PROC
+ 05BE  52			            PUSH DX
+ 05BF  50			            PUSH AX
+ 05C0  B4 02			            MOV  AH,02H
+ 05C2  8A D0			            MOV  DL,AL
+ 05C4  CD 21			            INT  21H
+ 05C6  58			            POP  AX
+ 05C7  5A			            POP  DX
+ 05C8  C3			            RET
+ 05C9				DISP_CH     ENDP
+
+ 05C9				FUNC  	    PROC 
+ 05C9  50						PUSH    AX 
+ 05CA  52						PUSH    DX 
+ 05CB  51						PUSH	CX
+ 05CC  8B D0						MOV DX,AX 
+ 05CE  B5 04						MOV CH, 4 
+ 05D0				L1: 
+ 05D0  B1 04						MOV CL, 4 
+ 05D2  D3 C2						ROL DX, CL 
+ 05D4  8A C2						MOV AL,DL 
+ 05D6  24 0F						AND AL,0FH 
+ 05D8  04 30						ADD AL,30H 
+ 05DA  3C 3A						CMP AL,3AH 
+ 05DC  7C 02						JL PRINTIT 
+ 05DE  04 07						ADD AL,7H 
+ 05E0				PRINTIT: 
+ 05E0  E8 FFDB						CALL  DISP_CH 
+ 05E3  FE CD						DEC CH 
+ 05E5  75 E9						JNZ L1
+ 05E7  59						POP CX
+ 05E8  5A						POP DX 
+ 05E9  58						POP AX 
+ 05EA  C3						RET 
+ 05EB				FUNC  		ENDP
+				;============================
+				;procedure  move
+ 05EB				move    proc    near
+				    ;save the working registers
+ 05EB  50			    push    ax
+ 05EC  53			    push    bx
+ 05ED  51			    push    cx
+ 05EE  52			    push    dx
+ 05EF  56			    push    si
+ 05F0  57			    push    di
+ 05F1  1E			    push    ds
+ 05F2  06			    push    es
+				    
+ 05F3  B8 ---- R		    mov     ax, SEG DATA
+ 05F6  8E D8			    mov     ds, ax
+ 05F8  FB			    sti
+				    
+				    ;write   HINT15
+				    ;write   CRLF
+				    
+				    ;get current current time 
+ 05F9  B0 02			    mov     al, 2   ;get minute
+ 05FB  E6 70			    out 70h,    al
+ 05FD  EB 00			    jmp $+2
+ 05FF  E4 71			    in  al, 71h
+ 0601  A2 0517 R		    mov [ds:cur_minute],    al
+				    
+				    
+ 0604  B0 00			    mov     al, 0   ;get second
+ 0606  E6 70			    out 70h,    al
+ 0608  EB 00			    jmp $+2
+ 060A  E4 71			    in  al, 71h
+ 060C  A2 0516 R		    mov [ds:cur_second],    al
+				    
+				    ;mov ax, WORD PTR [ds:current_time]
+				    ;call    func
+				    ;write   CRLF
+
+				    ;save sub_time
+ 060F  A0 0516 R		    mov     al, [ds:cur_second]
+ 0612  2A 06 0514 R		    sub     al, [ds:pre_second]
+ 0616  A2 0518 R		    mov     [ds:sub_time],  al
+				    
+				    ;mov     ah, 0
+				    ;call    func
+				    ;write   CRLF
+				    
+				    ;save pre_time
+ 0619  A1 0516 R		    mov     ax, WORD PTR [ds:current_time]
+ 061C  A3 0514 R		    mov     WORD PTR [ds:pre_time],  ax
+				    
+ 061F  A0 0518 R		    mov     al, [ds:sub_time]
+ 0622  3C 00			    cmp     al, 0
+ 0624  0F 84 0084		    jz  return_interrupt
+				    
+ 0628  A0 0516 R		    mov     al, [ds:cur_second]
+ 062B  3A 06 0512 R		    cmp     al, [ds:ch_second]
+ 062F  75 7B			    jnz return_interrupt
+
+				;begin change environment
+				    ;write   HINT15
+				    ;write   CRLF
+ 0631  80 3E 0511 R 00		    cmp     [ds:change_direction],  0
+ 0636  74 02			    jz  stack_stackbak
+ 0638  75 39			    jnz stackbak_stack
+
+ 063A				stack_stackbak:
+ 063A  A1 0516 R		    mov ax, WORD PTR [ds:current_time]
+ 063D  E8 FF89			    call    func
+				    write   HINT19
+ 0640  BA 0460 R	     1		LEA DX,HINT19
+ 0643  B4 09		     1		MOV AH,9
+ 0645  CD 21		     1		INT 21H
+				    write   CRLF
+ 0647  BA 0362 R	     1		LEA DX,CRLF
+ 064A  B4 09		     1		MOV AH,9
+ 064C  CD 21		     1		INT 21H
+				    
+ 064E  1E			    push ds
+ 064F  06			    push es
+ 0650  B8 ---- R		    mov ax, seg STACK
+ 0653  8E D8			    mov ds, ax  
+ 0655  B8 ---- R		    mov ax, seg STACKBAK
+ 0658  8E C0			    mov es, ax
+				    
+				    ;copy
+ 065A  BE 0000 R		    lea si, stack_a
+ 065D  BF 0000 R		    lea di, stack_b
+ 0660  B9 00C8			    mov cx, 200
+ 0663  FC			    cld
+ 0664  F3/ A4			    rep movsb
+				    
+ 0666  8C C0			    mov ax, es  ;change ss
+ 0668  8E D0			    mov ss, ax
+ 066A  07			    pop es
+ 066B  1F			    pop ds
+				    ;mov ax, ss
+				    ;call    func
+				    
+ 066C  C6 06 0511 R 01		    mov     [ds:change_direction],  1
+ 0671  EB 39			    jmp return_interrupt
+				    
+ 0673				stackbak_stack:
+ 0673  A1 0516 R		    mov ax, WORD PTR [ds:current_time]
+ 0676  E8 FF50			    call    func
+				    write   HINT20
+ 0679  BA 0477 R	     1		LEA DX,HINT20
+ 067C  B4 09		     1		MOV AH,9
+ 067E  CD 21		     1		INT 21H
+				    write   CRLF
+ 0680  BA 0362 R	     1		LEA DX,CRLF
+ 0683  B4 09		     1		MOV AH,9
+ 0685  CD 21		     1		INT 21H
+				    
+ 0687  1E			    push ds
+ 0688  06			    push es
+ 0689  B8 ---- R		    mov ax, seg STACK
+ 068C  8E C0			    mov es, ax  
+ 068E  B8 ---- R		    mov ax, seg STACKBAK
+ 0691  8E D8			    mov ds, ax
+				    
+				    ;copy
+ 0693  BF 0000 R		    lea di, stack_a
+ 0696  BE 0000 R		    lea si, stack_b
+ 0699  B9 00C8			    mov cx, 200
+ 069C  FC			    cld
+ 069D  F3/ A4			    rep movsb
+				    
+ 069F  8C C0			    mov ax, es  ;change ss
+ 06A1  8E D0			    mov ss, ax
+ 06A3  07			    pop es
+ 06A4  1F			    pop ds
+				    
+				    ;mov ax, ss
+				    ;call    func
+				    
+ 06A5  C6 06 0511 R 00		    mov     [ds:change_direction],  0
+ 06AA  EB 00			    jmp return_interrupt
+
+ 06AC				return_interrupt:
+ 06AC  FA			    cli
+ 06AD  07			    pop es  ;restore the registers
+ 06AE  1F			    pop ds  
+ 06AF  5F			    pop di
+ 06B0  5E			    pop si
+ 06B1  5A			    pop dx  
+ 06B2  59			    pop cx 
+ 06B3  5B			    pop bx
+ 06B4  58			    pop ax
+				    
+ 06B5  CF			    iret    ;interrupt return
+ 06B6				move    endp
+				;=============================
+				    
+
+
+				;===========================================================================
+ 06B6				TASK9:	
+				    write   LABEL9
+ 06B6  BA 04F0 R	     1		LEA DX,LABEL9
+ 06B9  B4 09		     1		MOV AH,9
+ 06BB  CD 21		     1		INT 21H
+				    write   HINT17    
+ 06BD  BA 0447 R	     1		LEA DX,HINT17
+ 06C0  B4 09		     1		MOV AH,9
+ 06C2  CD 21		     1		INT 21H
+ 06C4  80 3E 0519 R 00		    cmp     [ds:is_interrupt_on],   0
+ 06C9  74 0E			    jz  exit
+ 06CB  8B 16 051C R		    mov     dx, WORD PTR [ds:old_offset]
+ 06CF  8E 1E 051A R		    mov     ds, WORD PTR [ds:old_seg]
+ 06D3  B0 1C			    mov     al, 1ch
+ 06D5  B4 25			    mov     ah, 25h
+ 06D7  CD 21			    int     21h
+
+ 06D9				exit:
+ 06D9  B4 4C			    MOV	AH,	4CH
+ 06DB  CD 21				INT	21H
+				;ERRO:WRITE HINT4
+ 06DD				CODE	ENDS
+					END	START
+Microsoft (R) Macro Assembler Version 6.00     		    04/18/20 23:33:38
+SHOP.ASM						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+READ . . . . . . . . . . . . . .	Proc
+WRITE  . . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 06DD	  Para	  Private 
+DATA . . . . . . . . . . . . . .	16 Bit	 051F	  Para	  Private 
+STACKBAK . . . . . . . . . . . .	16 Bit	 00C8	  Para	  Private 
+STACK  . . . . . . . . . . . . .	16 Bit	 00C8	  Para	  Stack	  
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+DISP_CH  . . . . . . . . . . . .	P Near	 05BE	  CODE	Length= 000B Public
+FUNC . . . . . . . . . . . . . .	P Near	 05C9	  CODE	Length= 0022 Public
+  L1 . . . . . . . . . . . . . .	L Near	 05D0	  CODE	
+  PRINTIT  . . . . . . . . . . .	L Near	 05E0	  CODE	
+TASK1  . . . . . . . . . . . . .	P Near	 010F	  CODE	Length= 0081 Public
+  LOOPA  . . . . . . . . . . . .	L Near	 015C	  CODE	
+TASK2  . . . . . . . . . . . . .	P Near	 0190	  CODE	Length= 006E Public
+  LOOPC  . . . . . . . . . . . .	L Near	 01C0	  CODE	
+  LOOPF  . . . . . . . . . . . .	L Near	 01D1	  CODE	
+TASK3  . . . . . . . . . . . . .	P Near	 01FE	  CODE	Length= 0041 Public
+TASK4  . . . . . . . . . . . . .	P Near	 023F	  CODE	Length= 0088 Public
+  LOOPJ  . . . . . . . . . . . .	L Near	 024C	  CODE	
+  BREAKC . . . . . . . . . . . .	L Near	 02B1	  CODE	
+TASK5  . . . . . . . . . . . . .	P Near	 02C7	  CODE	Length= 001D Public
+TASK6  . . . . . . . . . . . . .	P Near	 02E4	  CODE	Length= 0108 Public
+  NOAUTH . . . . . . . . . . . .	L Near	 03D6	  CODE	
+TASK7  . . . . . . . . . . . . .	P Near	 03EC	  CODE	Length= 0053 Public
+  start_interrupt  . . . . . . .	L Near	 03FB	  CODE	
+TASK8  . . . . . . . . . . . . .	P Near	 043F	  CODE	Length= 001B Public
+move . . . . . . . . . . . . . .	P Near	 05EB	  CODE	Length= 00CB Public
+  stack_stackbak . . . . . . . .	L Near	 063A	  CODE	
+  stackbak_stack . . . . . . . .	L Near	 0673	  CODE	
+  return_interrupt . . . . . . .	L Near	 06AC	  CODE	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ANYKEY . . . . . . . . . . . . .	Byte	 02C6	  DATA	
+AUTH . . . . . . . . . . . . . .	Byte	 0021	  DATA	
+BLANK  . . . . . . . . . . . . .	Byte	 0365	  DATA	
+BNAME  . . . . . . . . . . . . .	Byte	 0000	  DATA	
+BOSS . . . . . . . . . . . . . .	Byte	 031B	  DATA	
+BPASS_encryption . . . . . . . .	L Near	 0016	  DATA	
+BPASS  . . . . . . . . . . . . .	Byte	 000B	  DATA	
+BREAKA . . . . . . . . . . . . .	L Near	 001B	  CODE	
+BREAKB . . . . . . . . . . . . .	L Near	 0043	  CODE	
+CMPPASSWD  . . . . . . . . . . .	L Near	 0498	  CODE	
+CRLF . . . . . . . . . . . . . .	Byte	 0362	  DATA	
+CUSTOMER . . . . . . . . . . . .	Byte	 0326	  DATA	
+DEFAULT  . . . . . . . . . . . .	Byte	 0022	  DATA	
+EMPTY  . . . . . . . . . . . . .	L Near	 05AD	  CODE	
+F10T2  . . . . . . . . . . . . .	L Far	 0000	  External
+F2T10  . . . . . . . . . . . . .	L Far	 0000	  External
+FOUND  . . . . . . . . . . . . .	L Near	 04D5	  CODE	
+GA1  . . . . . . . . . . . . . .	Byte	 002F	  DATA	
+GA2  . . . . . . . . . . . . . .	Byte	 0044	  DATA	
+GAN  . . . . . . . . . . . . . .	Byte	 0059	  DATA	
+GLENGTH  . . . . . . . . . . . .	Number	 000Ah	 
+GOOD . . . . . . . . . . . . . .	Word	 02A5	  DATA	
+HINT10 . . . . . . . . . . . . .	Byte	 03EB	  DATA	
+HINT11 . . . . . . . . . . . . .	Byte	 03F3	  DATA	
+HINT12 . . . . . . . . . . . . .	Byte	 03FD	  DATA	
+HINT13 . . . . . . . . . . . . .	Byte	 0410	  DATA	
+HINT14 . . . . . . . . . . . . .	Byte	 041E	  DATA	
+HINT15 . . . . . . . . . . . . .	Byte	 0427	  DATA	
+HINT16 . . . . . . . . . . . . .	Byte	 043A	  DATA	
+HINT17 . . . . . . . . . . . . .	Byte	 0447	  DATA	
+HINT18 . . . . . . . . . . . . .	Byte	 0455	  DATA	
+HINT19 . . . . . . . . . . . . .	Byte	 0460	  DATA	
+HINT1  . . . . . . . . . . . . .	Byte	 0367	  DATA	
+HINT20 . . . . . . . . . . . . .	Byte	 0477	  DATA	
+HINT2  . . . . . . . . . . . . .	Byte	 036D	  DATA	
+HINT3  . . . . . . . . . . . . .	Byte	 0373	  DATA	
+HINT4  . . . . . . . . . . . . .	Byte	 0391	  DATA	
+HINT5  . . . . . . . . . . . . .	Byte	 03AE	  DATA	
+HINT6  . . . . . . . . . . . . .	Byte	 03B8	  DATA	
+HINT7  . . . . . . . . . . . . .	Byte	 03C2	  DATA	
+HINT8  . . . . . . . . . . . . .	Byte	 03CE	  DATA	
+HINT9  . . . . . . . . . . . . .	Byte	 03DC	  DATA	
+IN_GOOD  . . . . . . . . . . . .	Byte	 02FE	  DATA	
+IN_NAME  . . . . . . . . . . . .	Byte	 02D2	  DATA	
+IN_PWD . . . . . . . . . . . . .	Byte	 02E8	  DATA	
+IN_SER . . . . . . . . . . . . .	Byte	 02A7	  DATA	
+IN_WORD  . . . . . . . . . . . .	Byte	 02AE	  DATA	
+LABEL1 . . . . . . . . . . . . .	Byte	 048E	  DATA	
+LABEL2 . . . . . . . . . . . . .	Byte	 0499	  DATA	
+LABEL3 . . . . . . . . . . . . .	Byte	 04A3	  DATA	
+LABEL4 . . . . . . . . . . . . .	Byte	 04AD	  DATA	
+LABEL5 . . . . . . . . . . . . .	Byte	 04C4	  DATA	
+LABEL6 . . . . . . . . . . . . .	Byte	 04D0	  DATA	
+LABEL7 . . . . . . . . . . . . .	Byte	 04DB	  DATA	
+LABEL8 . . . . . . . . . . . . .	Byte	 04E4	  DATA	
+LABEL9 . . . . . . . . . . . . .	Byte	 04F0	  DATA	
+LOGINERROR . . . . . . . . . . .	L Near	 046A	  CODE	
+LOGINSUCCESS . . . . . . . . . .	L Near	 0481	  CODE	
+LOOPB  . . . . . . . . . . . . .	L Near	 04A7	  CODE	
+LOOPH  . . . . . . . . . . . . .	L Near	 0584	  CODE	
+LOOPI  . . . . . . . . . . . . .	L Near	 0037	  CODE	
+LOOPO  . . . . . . . . . . . . .	L Near	 04EE	  CODE	
+MENU . . . . . . . . . . . . . .	L Near	 0007	  CODE	
+NLENGTH  . . . . . . . . . . . .	Number	 0014h	 
+NOENTER  . . . . . . . . . . . .	Byte	 04F9	  DATA	
+NOGOOD . . . . . . . . . . . . .	L Near	 059C	  CODE	
+NOTFOUND . . . . . . . . . . . .	L Near	 0573	  CODE	
+NYUKA  . . . . . . . . . . . . .	Byte	 033B	  DATA	
+N  . . . . . . . . . . . . . . .	Number	 001Eh	 
+OFF  . . . . . . . . . . . . . .	Byte	 032F	  DATA	
+OPT  . . . . . . . . . . . . . .	Byte	 02BA	  DATA	
+PLENGTH  . . . . . . . . . . . .	Number	 0014h	 
+PRICE  . . . . . . . . . . . . .	Byte	 0334	  DATA	
+PRINTBNAME . . . . . . . . . . .	L Near	 04C1	  CODE	
+PRINTCUSTOMER  . . . . . . . . .	L Near	 04CB	  CODE	
+RECM . . . . . . . . . . . . . .	Byte	 0359	  DATA	
+SE1  . . . . . . . . . . . . . .	L Near	 00DF	  CODE	
+SE2  . . . . . . . . . . . . . .	L Near	 00E5	  CODE	
+SE3  . . . . . . . . . . . . . .	L Near	 00EB	  CODE	
+SE4  . . . . . . . . . . . . . .	L Near	 00F1	  CODE	
+SE5  . . . . . . . . . . . . . .	L Near	 00F7	  CODE	
+SE6  . . . . . . . . . . . . . .	L Near	 00FD	  CODE	
+SE7  . . . . . . . . . . . . . .	L Near	 0103	  CODE	
+SE8  . . . . . . . . . . . . . .	L Near	 0109	  CODE	
+SETAUTH0 . . . . . . . . . . . .	L Near	 045A	  CODE	
+SETAUTH1 . . . . . . . . . . . .	L Near	 0462	  CODE	
+SHOWGOOD . . . . . . . . . . . .	L Near	 0584	  CODE	
+SNAME  . . . . . . . . . . . . .	Byte	 002A	  DATA	
+SOLD . . . . . . . . . . . . . .	Byte	 0349	  DATA	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODE	
+STOP . . . . . . . . . . . . . .	L Near	 0592	  CODE	
+SYM  . . . . . . . . . . . . . .	Byte	 0318	  DATA	
+TASK9  . . . . . . . . . . . . .	L Near	 06B6	  CODE	
+TEMP1  . . . . . . . . . . . . .	Word	 0314	  DATA	
+TEMP2  . . . . . . . . . . . . .	Word	 0316	  DATA	
+ch_minute  . . . . . . . . . . .	Byte	 0513	  DATA	
+ch_second  . . . . . . . . . . .	Byte	 0512	  DATA	
+change_direction . . . . . . . .	Byte	 0511	  DATA	
+change_time  . . . . . . . . . .	L Near	 0512	  DATA	
+cur_minute . . . . . . . . . . .	Byte	 0517	  DATA	
+cur_second . . . . . . . . . . .	Byte	 0516	  DATA	
+current_time . . . . . . . . . .	L Near	 0516	  DATA	
+exit . . . . . . . . . . . . . .	L Near	 06D9	  CODE	
+is_interrupt_on  . . . . . . . .	Byte	 0519	  DATA	
+key  . . . . . . . . . . . . . .	Byte	 051E	  DATA	
+old_inter_vec  . . . . . . . . .	L Near	 051A	  DATA	
+old_offset . . . . . . . . . . .	Word	 051C	  DATA	
+old_seg  . . . . . . . . . . . .	Word	 051A	  DATA	
+pre_minute . . . . . . . . . . .	Byte	 0515	  DATA	
+pre_second . . . . . . . . . . .	Byte	 0514	  DATA	
+pre_time . . . . . . . . . . . .	L Near	 0514	  DATA	
+stack_a  . . . . . . . . . . . .	Byte	 0000	  STACK	
+stack_b  . . . . . . . . . . . .	Byte	 0000	  STACKBAK	
+sub_time . . . . . . . . . . . .	Byte	 0518	  DATA	
+
+	   0 Warnings
+	   0 Errors

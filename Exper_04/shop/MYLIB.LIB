@@ -10,3 +10,24 @@ READ MACRO A
 	INT 21H
 	ENDM
 
+disable_keyboard macro  
+    push    ax
+    ;in al, 21h
+	;or al, 02h
+	;out    21h,    al
+	in al, 61h
+	or al, 80h
+	out    61h,    al
+	pop    ax
+	endm
+	
+enable_keyboard macro
+    push    ax
+    ;in al,  21h
+    ;and al, 253
+    ;out 21h,    al
+    in  al, 61h
+    and al, 7fh
+    out 61h,    al
+    pop ax
+    endm
