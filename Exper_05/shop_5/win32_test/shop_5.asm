@@ -39,11 +39,11 @@ RADIX_S	proto	:dword,	:dword,	:dword
 		recommendation	dw	0
 	good	ends
 	N	equ	5
-	g1	good	<'pen',10,35,56,70,25,0>
-	g2	good	<'book',9,12,30,25,5,0>
-	g3	good	<'game',8,20,30,50,5,0>
-	g4	good	<'computer',7,50,80,60,6,0>
-	g5	good	<'phone',6,40,60,20,10,0>
+	g1	good	<'pen',8,12,30,15,5,0>
+	g2	good	<'book',8,2,30,15,5,0>
+	g3	good	<'game',8,10,30,20,5,0>
+	g4	good	<'computer',1,20,30,20,5,0>
+	g5	good	<'phone',8,20,50,30,10,0>
 	;g5	good	<'phone',10,35,56,70,25,0>
 	buf	dd	0,0,0,0,0
 	temp1	dw	0
@@ -319,7 +319,7 @@ PrintList	proc	firstGoodOffset:	dword,
 	mov	ebx,	Show_y
 	add	ebx,	y_blank
 	add	ebx,	y_blank
-	mov	ecx,	2
+	mov	ecx,	1
 	invoke	TextOut,hdc,eax,ebx,addr	temp_string,ecx
 	;
 	;invoke	RADIX_S,addr	temp_string,10,g1.in_price
@@ -411,7 +411,7 @@ PrintList	proc	firstGoodOffset:	dword,
 	add	ebx,	y_blank
 	add	ebx,	y_blank
 	add	ebx,	y_blank
-	mov	ecx,	2
+	mov	ecx,	1
 	invoke	TextOut,hdc,eax,ebx,addr	temp_string,ecx
 	;
 	;invoke	RADIX_S,addr	temp_string,10,g2.in_price
@@ -510,7 +510,7 @@ PrintList	proc	firstGoodOffset:	dword,
 	add	ebx,	y_blank
 	add	ebx,	y_blank
 	add	ebx,	y_blank
-	mov	ecx,	2
+	mov	ecx,	1
 	invoke	TextOut,hdc,eax,ebx,addr	temp_string,ecx
 	;
 	;invoke	RADIX_S,addr	temp_string,10,g2.in_price
@@ -616,7 +616,7 @@ PrintList	proc	firstGoodOffset:	dword,
 	add	ebx,	y_blank
 	add	ebx,	y_blank
 	add	ebx,	y_blank
-	mov	ecx,	2
+	mov	ecx,	1
 	invoke	TextOut,hdc,eax,ebx,addr	temp_string,ecx
 	;
 	;invoke	RADIX_S,addr	temp_string,10,g2.in_price
@@ -729,7 +729,7 @@ PrintList	proc	firstGoodOffset:	dword,
 	add	ebx,	y_blank
 	add	ebx,	y_blank
 	add	ebx,	y_blank
-	mov	ecx,	2
+	mov	ecx,	1
 	invoke	TextOut,hdc,eax,ebx,addr	temp_string,ecx
 	;
 	;invoke	RADIX_S,addr	temp_string,10,g2.in_price

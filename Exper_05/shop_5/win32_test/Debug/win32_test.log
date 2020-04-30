@@ -5,4 +5,4 @@ shop_5.asm(147): warning A6004: procedure argument or local not referenced : Cmd
 shop_5.asm(147): warning A6004: procedure argument or local not referenced : CmdShow
 shop_5.asm(831): warning A6004: procedure argument or local not referenced : firstGoodOffset
 shop_5.asm(831): warning A6004: procedure argument or local not referenced : GoodNum
-  win32_test.vcxproj -> D:\masm32\shop_5\Debug\shop_5.exe
+  win32_test.vcxproj -> D:\Nasm_Code_01\Exper_05\shop_5\Debug\shop_5.exe
