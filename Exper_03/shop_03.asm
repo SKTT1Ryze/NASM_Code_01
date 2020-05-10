@@ -135,7 +135,7 @@ point1:
 	
 	;write
 	;write  10, [ds:good]
-    mov	dx,	10
+	mov	dx,	10
 	mov	cx,	[ds:good]
 	mov	bx,	1
 	mov	ax,	4
