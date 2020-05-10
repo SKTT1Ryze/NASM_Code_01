@@ -16,6 +16,10 @@ int	task_1();
 int	task_2();
 int	task_3();
 int	task_4();
+int	task_5();
+int	task_6();
+int	task_7();
+int	task_8();
 void	goodInit();
 
 int	status=customer;
@@ -52,14 +56,13 @@ int	main()
 			case '2':task_2();getchar();break;
 			case '3':task_3();getchar();break;
 			case '4':task_4();getchar();break;
-			case '5':printf("5\n");getchar();break;
-			case '6':printf("6\n");getchar();break;
-			case '7':printf("7\n");getchar();break;
-			case '8':printf("8\n");getchar();break;
+			case '5':task_5();getchar();break;
+			case '6':task_6();getchar();break;
+			case '7':task_7();getchar();break;
+			case '8':task_8();getchar();break;
 			case '9':printf("Quit\n");return	0;getchar();break;
-			case 'm':printf("m\n");getchar();break;
-			case 'h':printf("h\n");getchar();break;
-			case 's':printf("s\n");getchar();break;
+			case 'm':Menu();getchar();break;
+			case 'h':startHint();getchar();break;
 			case 'q':printf("Quit\n");return	0;getchar();break;
 			case 10 :break;
 			default :printf("Command not found: %c\n",op);getchar();break;
@@ -114,8 +117,6 @@ void	goodInit()
 void	Menu()
 {
 	nasmprintf(1,"-----menu-----\n",15);
-	nasmprintf(1,"[user] \n",8);
-	nasmprintf(1,"[good] \n",8);
 	nasmprintf(1,"[1] Login\n",11);
 	nasmprintf(1,"[2] Find\n",10);
 	nasmprintf(1,"[3] Buy\n",9);
@@ -149,7 +150,6 @@ void	startHint()
 	printf("[Option]\n");
 	printf("1.Type \'m\' to show menu\n");
 	printf("2.Type \'h\' to show help\n");
-	printf("3.Type \'s\' to show status\n");
 	printf("\n");
 	printf("Good luck\n");
 }
@@ -208,17 +208,78 @@ int	task_2()
 }
 int	task_3()
 {
+	if(good_list[good_index].out_num>=good_list[good_index].in_num)
+	{
+		nasmprintf(1,"Have no good left\n",19);
+		return	1;
+	}
 	printf("Buy:%s\n",good_list[good_index].showname);
 	good_list[good_index].out_num=nasmadd(good_list[good_index].out_num,1);
 	printf("[out_num] %ld",good_list[good_index].out_num);
+	task_4();
 	getchar();
 	return	0;
 }
 int	task_4()
 {
-	int	a=66;
-	int	b=2;
-	printf("%ld\n",nasmsub(a,b));
 	//rdi rsi rdx rcx r8 r9
+	int	i=0;
+	long	temp=0;
+	nasmprintf(1,"Compute here...\n",17);
+	for(i=0;i<good_num;i++)
+	{
+		temp=((good_list[i].in_price*1280)/(good_list[i].out_price*good_list[i].discount));
+		good_list[i].recommendation=nasmadd(temp,good_list[i].out_num*128/(good_list[i].in_num*2));
+	}
+	nasmprintf(1,"Done\n",6);
+	return	0;
+}
+int	task_5()
+{
+	int i,j;
+	int	temp;
+	int	ranklist[good_num];
+	for(i=0;i<good_num;ranklist[i]=i,i++);
+	for(i=0;i<good_num-1;i++)
+		for(j=i+1;j<good_num;j++)
+			if(good_list[ranklist[i]].recommendation<good_list[ranklist[j]].recommendation)
+			{
+				temp=ranklist[i];
+				ranklist[i]=ranklist[j];
+				ranklist[j]=temp;
+			}
+	for(i=0;i<good_num;i++)
+		printf("[%d] %s\n",i,good_list[ranklist[i]].showname);
+	printf("rank end");
+	getchar();
+	return	0;
+}
+
+int	task_6()
+{
+	printf("[%s]\n",good_list[good_index].showname);
+	printf("[discount] %ld => ",good_list[good_index].discount);
+	scanf("%ld",&good_list[good_index].discount);
+	printf("[in_price] %ld => ",good_list[good_index].in_price);
+	scanf("%ld",&good_list[good_index].in_price);
+	printf("[out_price] %ld => ",good_list[good_index].out_price);
+	scanf("%ld",&good_list[good_index].out_price);
+	printf("[in_num] %ld => ",good_list[good_index].in_num);
+	scanf("%ld",&good_list[good_index].in_num);
+	printf("[out_num] %ld => ",good_list[good_index].out_num);
+	scanf("%ld",&good_list[good_index].out_num);
+	task_4();
+	printf("change success");
+	getchar();
+	return	0;
+}
+int	task_7()
+{
+	nasmprintf(1,"task 7\n",8);
+	return	0;
+}
+int	task_8()
+{
+	nasmprintf(1,"task 8\n",8);
 	return	0;
 }
